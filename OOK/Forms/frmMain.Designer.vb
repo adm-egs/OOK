@@ -24,22 +24,32 @@ Partial Class frmMain
     Private Sub InitializeComponent()
         Me.TabControl1 = New System.Windows.Forms.TabControl()
         Me.TabPage1 = New System.Windows.Forms.TabPage()
+        Me.Label3 = New System.Windows.Forms.Label()
+        Me.btnOsirisStudentenOpvragen = New System.Windows.Forms.Button()
         Me.Label2 = New System.Windows.Forms.Label()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.btnOpvragenStudenten = New System.Windows.Forms.Button()
         Me.btnGetToken = New System.Windows.Forms.Button()
         Me.TabPage2 = New System.Windows.Forms.TabPage()
         Me.txtLog = New System.Windows.Forms.TextBox()
+        Me.TabPage3 = New System.Windows.Forms.TabPage()
+        Me.Label6 = New System.Windows.Forms.Label()
+        Me.Label5 = New System.Windows.Forms.Label()
+        Me.Label4 = New System.Windows.Forms.Label()
+        Me.btnStuurStudentNaarOO = New System.Windows.Forms.Button()
+        Me.txtStudentNummer = New System.Windows.Forms.TextBox()
         Me.frmMainStatusStrip = New System.Windows.Forms.StatusStrip()
         Me.TabControl1.SuspendLayout()
         Me.TabPage1.SuspendLayout()
         Me.TabPage2.SuspendLayout()
+        Me.TabPage3.SuspendLayout()
         Me.SuspendLayout()
         '
         'TabControl1
         '
         Me.TabControl1.Controls.Add(Me.TabPage1)
         Me.TabControl1.Controls.Add(Me.TabPage2)
+        Me.TabControl1.Controls.Add(Me.TabPage3)
         Me.TabControl1.Location = New System.Drawing.Point(41, 97)
         Me.TabControl1.Name = "TabControl1"
         Me.TabControl1.SelectedIndex = 0
@@ -48,6 +58,8 @@ Partial Class frmMain
         '
         'TabPage1
         '
+        Me.TabPage1.Controls.Add(Me.Label3)
+        Me.TabPage1.Controls.Add(Me.btnOsirisStudentenOpvragen)
         Me.TabPage1.Controls.Add(Me.Label2)
         Me.TabPage1.Controls.Add(Me.Label1)
         Me.TabPage1.Controls.Add(Me.btnOpvragenStudenten)
@@ -59,6 +71,23 @@ Partial Class frmMain
         Me.TabPage1.TabIndex = 0
         Me.TabPage1.Text = "Onderwijs Online"
         Me.TabPage1.UseVisualStyleBackColor = True
+        '
+        'Label3
+        '
+        Me.Label3.AutoSize = True
+        Me.Label3.Location = New System.Drawing.Point(87, 121)
+        Me.Label3.Name = "Label3"
+        Me.Label3.Size = New System.Drawing.Size(152, 15)
+        Me.Label3.TabIndex = 5
+        Me.Label3.Text = "Opvragen studenten OSIRIS"
+        '
+        'btnOsirisStudentenOpvragen
+        '
+        Me.btnOsirisStudentenOpvragen.Location = New System.Drawing.Point(27, 121)
+        Me.btnOsirisStudentenOpvragen.Name = "btnOsirisStudentenOpvragen"
+        Me.btnOsirisStudentenOpvragen.Size = New System.Drawing.Size(35, 21)
+        Me.btnOsirisStudentenOpvragen.TabIndex = 4
+        Me.btnOsirisStudentenOpvragen.UseVisualStyleBackColor = True
         '
         'Label2
         '
@@ -72,15 +101,15 @@ Partial Class frmMain
         'Label1
         '
         Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(87, 94)
+        Me.Label1.Location = New System.Drawing.Point(87, 76)
         Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(115, 15)
+        Me.Label1.Size = New System.Drawing.Size(136, 15)
         Me.Label1.TabIndex = 2
-        Me.Label1.Text = "Opvragen studenten"
+        Me.Label1.Text = "Opvragen studenten OO"
         '
         'btnOpvragenStudenten
         '
-        Me.btnOpvragenStudenten.Location = New System.Drawing.Point(27, 86)
+        Me.btnOpvragenStudenten.Location = New System.Drawing.Point(27, 72)
         Me.btnOpvragenStudenten.Name = "btnOpvragenStudenten"
         Me.btnOpvragenStudenten.Size = New System.Drawing.Size(35, 23)
         Me.btnOpvragenStudenten.TabIndex = 1
@@ -102,7 +131,7 @@ Partial Class frmMain
         Me.TabPage2.Padding = New System.Windows.Forms.Padding(3)
         Me.TabPage2.Size = New System.Drawing.Size(661, 286)
         Me.TabPage2.TabIndex = 1
-        Me.TabPage2.Text = "Logging"
+        Me.TabPage2.Text = "Log"
         Me.TabPage2.UseVisualStyleBackColor = True
         '
         'txtLog
@@ -113,6 +142,63 @@ Partial Class frmMain
         Me.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.txtLog.Size = New System.Drawing.Size(600, 245)
         Me.txtLog.TabIndex = 0
+        '
+        'TabPage3
+        '
+        Me.TabPage3.Controls.Add(Me.Label6)
+        Me.TabPage3.Controls.Add(Me.Label5)
+        Me.TabPage3.Controls.Add(Me.Label4)
+        Me.TabPage3.Controls.Add(Me.btnStuurStudentNaarOO)
+        Me.TabPage3.Controls.Add(Me.txtStudentNummer)
+        Me.TabPage3.Location = New System.Drawing.Point(4, 24)
+        Me.TabPage3.Name = "TabPage3"
+        Me.TabPage3.Padding = New System.Windows.Forms.Padding(3)
+        Me.TabPage3.Size = New System.Drawing.Size(661, 286)
+        Me.TabPage3.TabIndex = 2
+        Me.TabPage3.Text = "Osiris"
+        Me.TabPage3.UseVisualStyleBackColor = True
+        '
+        'Label6
+        '
+        Me.Label6.AutoSize = True
+        Me.Label6.Location = New System.Drawing.Point(49, 66)
+        Me.Label6.Name = "Label6"
+        Me.Label6.Size = New System.Drawing.Size(152, 15)
+        Me.Label6.TabIndex = 4
+        Me.Label6.Text = "Student naar OO verzenden"
+        '
+        'Label5
+        '
+        Me.Label5.AutoSize = True
+        Me.Label5.Location = New System.Drawing.Point(283, 136)
+        Me.Label5.Name = "Label5"
+        Me.Label5.Size = New System.Drawing.Size(94, 15)
+        Me.Label5.TabIndex = 3
+        Me.Label5.Text = "Studentnummer"
+        '
+        'Label4
+        '
+        Me.Label4.AutoSize = True
+        Me.Label4.Location = New System.Drawing.Point(216, 35)
+        Me.Label4.Name = "Label4"
+        Me.Label4.Size = New System.Drawing.Size(94, 15)
+        Me.Label4.TabIndex = 2
+        Me.Label4.Text = "Studentnummer"
+        '
+        'btnStuurStudentNaarOO
+        '
+        Me.btnStuurStudentNaarOO.Location = New System.Drawing.Point(49, 27)
+        Me.btnStuurStudentNaarOO.Name = "btnStuurStudentNaarOO"
+        Me.btnStuurStudentNaarOO.Size = New System.Drawing.Size(42, 23)
+        Me.btnStuurStudentNaarOO.TabIndex = 1
+        Me.btnStuurStudentNaarOO.UseVisualStyleBackColor = True
+        '
+        'txtStudentNummer
+        '
+        Me.txtStudentNummer.Location = New System.Drawing.Point(109, 28)
+        Me.txtStudentNummer.Name = "txtStudentNummer"
+        Me.txtStudentNummer.Size = New System.Drawing.Size(101, 23)
+        Me.txtStudentNummer.TabIndex = 0
         '
         'frmMainStatusStrip
         '
@@ -135,6 +221,8 @@ Partial Class frmMain
         Me.TabPage1.PerformLayout()
         Me.TabPage2.ResumeLayout(False)
         Me.TabPage2.PerformLayout()
+        Me.TabPage3.ResumeLayout(False)
+        Me.TabPage3.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -149,4 +237,12 @@ Partial Class frmMain
     Friend WithEvents Label2 As Label
     Friend WithEvents Label1 As Label
     Friend WithEvents btnOpvragenStudenten As Button
+    Friend WithEvents Label3 As Label
+    Friend WithEvents btnOsirisStudentenOpvragen As Button
+    Friend WithEvents TabPage3 As TabPage
+    Friend WithEvents btnStuurStudentNaarOO As Button
+    Friend WithEvents txtStudentNummer As TextBox
+    Friend WithEvents Label4 As Label
+    Friend WithEvents Label6 As Label
+    Friend WithEvents Label5 As Label
 End Class

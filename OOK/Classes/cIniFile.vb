@@ -48,8 +48,7 @@
         ' Returns a string from your INI file
         Dim intCharCount As Integer
         Dim objResult As New System.Text.StringBuilder(256)
-        intCharCount = GetPrivateProfileString(Section, Key,
-       [Default], objResult, objResult.Capacity, strFilename)
+        intCharCount = GetPrivateProfileString(Section, Key, [Default], objResult, objResult.Capacity, strFilename)
         If intCharCount > 0 Then
             GetString =
        Left(objResult.ToString, intCharCount)
