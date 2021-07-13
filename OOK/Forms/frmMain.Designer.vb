@@ -39,6 +39,7 @@ Partial Class frmMain
         Me.btnStuurStudentNaarOO = New System.Windows.Forms.Button()
         Me.txtStudentNummer = New System.Windows.Forms.TextBox()
         Me.frmMainStatusStrip = New System.Windows.Forms.StatusStrip()
+        Me.btnDatabaseLogin = New System.Windows.Forms.Button()
         Me.TabControl1.SuspendLayout()
         Me.TabPage1.SuspendLayout()
         Me.TabPage2.SuspendLayout()
@@ -58,6 +59,7 @@ Partial Class frmMain
         '
         'TabPage1
         '
+        Me.TabPage1.Controls.Add(Me.btnDatabaseLogin)
         Me.TabPage1.Controls.Add(Me.Label3)
         Me.TabPage1.Controls.Add(Me.btnOsirisStudentenOpvragen)
         Me.TabPage1.Controls.Add(Me.Label2)
@@ -207,6 +209,14 @@ Partial Class frmMain
         Me.frmMainStatusStrip.Size = New System.Drawing.Size(800, 22)
         Me.frmMainStatusStrip.TabIndex = 1
         '
+        'btnDatabaseLogin
+        '
+        Me.btnDatabaseLogin.Location = New System.Drawing.Point(27, 172)
+        Me.btnDatabaseLogin.Name = "btnDatabaseLogin"
+        Me.btnDatabaseLogin.Size = New System.Drawing.Size(75, 23)
+        Me.btnDatabaseLogin.TabIndex = 6
+        Me.btnDatabaseLogin.UseVisualStyleBackColor = True
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
@@ -245,4 +255,5 @@ Partial Class frmMain
     Friend WithEvents Label4 As Label
     Friend WithEvents Label6 As Label
     Friend WithEvents Label5 As Label
+    Friend WithEvents btnDatabaseLogin As Button
 End Class

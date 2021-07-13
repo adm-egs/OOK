@@ -17,6 +17,15 @@
             _code = value
         End Set
     End Property
+    Public ReadOnly Property CodeVertaaldVoorOO As String
+        Get
+            Dim sHulp As String = UCase(_code)
+            If Right(sHulp, 1) = "O" Then
+
+            End If
+
+        End Get
+    End Property
 
     Public Property Naam As String
         Get

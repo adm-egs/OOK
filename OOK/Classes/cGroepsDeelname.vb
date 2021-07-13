@@ -79,4 +79,64 @@
         Return True
     End Function
     '    Select Case groep, ingangsdatum, afloopdatum from ost_sgroep_student where studentnummer=329879;
+
+    Public Function WriteMe2MutatieLog(sStudentNr As String) As Boolean
+        l.LOGTHIS("toekomstige groepsdeelname naar mutatielog schrijven")
+        Dim cmdStart As New OleDb.OleDbCommand
+        cmdStart.CommandType = CommandType.StoredProcedure
+        cmdStart.CommandText = "db_umra_2021.update_groepsdeelname"
+
+        With cmdStart.Parameters
+            .AddWithValue("@sleutel", UniqueKey)
+            .AddWithValue("@datum_tijd", Me.IngangsDatum)
+            .AddWithValue("@omgeving", i.OmgevingsNaam)
+            .AddWithValue("@tabel", "Groepsdeelname")
+            .AddWithValue("@actie_code", "StartGroepsdeelname")
+            .AddWithValue("@waarde", Me.IngangsDatum)
+            .AddWithValue("@omschrijving", "Start groepsdeelname")
+            .AddWithValue("@persoonId", sStudentNr)
+        End With
+
+        If dbMiddleWare.sqlCheckConnectionState = True Then
+            Try
+                cmdStart.Connection = dbMiddleWare.conSQL
+                cmdStart.ExecuteNonQuery()
+
+            Catch ex As Exception
+                Return False
+            End Try
+
+        Else
+            Return False
+        End If
+        Dim cmdEnd As New OleDb.OleDbCommand
+        cmdStart.CommandType = CommandType.StoredProcedure
+        cmdStart.CommandText = "db_umra_2021.update_groepsdeelname"
+
+        With cmdEnd.Parameters
+            .AddWithValue("@sleutel", UniqueKey)
+            .AddWithValue("@datum_tijd", Me.AfloopDatum)
+            .AddWithValue("@omgeving", i.OmgevingsNaam)
+            .AddWithValue("@tabel", "Groepsdeelname")
+            .AddWithValue("@actie_code", "EindeGroepsdeelname")
+            .AddWithValue("@waarde", Me.IngangsDatum)
+            .AddWithValue("@omschrijving", "Einde groepsdeelname")
+            .AddWithValue("@persoonId", sStudentNr)
+        End With
+
+        If dbMiddleWare.sqlCheckConnectionState = True Then
+            Try
+                cmdEnd.Connection = dbMiddleWare.conSQL
+                cmdEnd.ExecuteNonQuery()
+
+            Catch ex As Exception
+                Return False
+            End Try
+
+        Else
+            Return False
+        End If
+
+        Return True
+    End Function
 End Class

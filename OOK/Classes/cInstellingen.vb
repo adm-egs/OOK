@@ -19,7 +19,7 @@ Public Class cInstellingen
     Private _SqlStudentOpleidingen As String = ""
     Private _SqlStudentKlasLesgroepen As String = ""
     Private _tokengeldigheid As Long = 0
-
+    Private _omgevingsNaam As String = ""
 
     Public Property GrantType As String
         Get
@@ -175,6 +175,15 @@ Public Class cInstellingen
         End Set
     End Property
 
+    Public Property OmgevingsNaam As String
+        Get
+            Return _omgevingsNaam
+        End Get
+        Set(value As String)
+            _omgevingsNaam = value
+        End Set
+    End Property
+
     Public Sub New()
 
         Try
@@ -228,7 +237,7 @@ Public Class cInstellingen
             If l.UitgebreideLogging Then l.LOGTHIS("Expires in : " & i.AuthenticationTokenGeldigHeid)
 
             Me.Tokengeldigheid = CLng(expires_in)
-            l.LOGTHIS("Authenticatie token opgevraagd")
+            If l.UitgebreideLogging Then l.LOGTHIS("Authenticatie token opgevraagd")
 
             Return True
         Catch ex As Exception
@@ -260,8 +269,7 @@ Public Class cInstellingen
 
             ClientId = ini.GetString("connect", "client_id", "")
             ClientSecret = ini.GetString("connect", "client_secret", "")
-
-
+            OmgevingsNaam = ini.GetString("algemeen", "omgeving", "onbekend")
 
         Catch ex As Exception
             l.LOGTHIS("Fout bij opvragen default instellingen")

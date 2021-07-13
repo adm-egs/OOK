@@ -1,4 +1,6 @@
-﻿Public Class frmMain
+﻿Imports System.Data.OleDb
+
+Public Class frmMain
     Public Delegate Sub LogTekstDelegate(ByVal tekst As String)
 
     Public Sub LogTekst(ByVal strTekst As String)
@@ -27,9 +29,10 @@
         End If
 
         dbOsiris = New cDbUtils
+        dbMiddleWare = New cDbUtils
         'dbOsiris.oraConString = "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.69.31)(PORT=1523))(CONNECT_DATA=(SERVICE_NAME=utrtsts)));User Id=MROMBOUTS;Password=Pretpark_draaimolen_5891;"
         dbOsiris.oraConString = "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.69.31)(PORT=1523))(CONNECT_DATA=(SERVICE_NAME=utrtsts)));User Id=MBOUMW21;Password=Appelmoes_Zwemmen_93355;"
-
+        dbMiddleWare.sqlConstring = "Provider=MSOLEDBSQL;Server=SQL803354-PRD;Database=Koppel;UID=ook_user_middleware;PWD=v@!SExwku5BTOa%tWq!3"
         Me.txtStudentNummer.Text = ini.GetString("algemeen", "laststudent", "")
 
     End Sub
@@ -89,5 +92,21 @@
 
     Private Sub txtStudentNummer_TextChanged(sender As Object, e As EventArgs) Handles txtStudentNummer.TextChanged
         ini.WriteString("algemeen", "lastStudent", Me.txtStudentNummer.Text)
+    End Sub
+
+    Private Sub btnDatabaseLogin_Click(sender As Object, e As EventArgs) Handles btnDatabaseLogin.Click
+        Dim sQuery As String = "select * from koppel.db_oo.mutatielog"
+
+        Dim rd As OleDbDataReader = dbMiddleWare.sqlQueryUitvoeren(sQuery)
+        If rd.HasRows = False Then
+            rd.Close()
+            l.LOGTHIS("geen mutaties gevonden")
+            Exit Sub
+        End If
+        Dim count As Long = 0
+        While rd.Read
+            count += 1
+        End While
+        l.LOGTHIS(count & " mutaties gevonden")
     End Sub
 End Class
