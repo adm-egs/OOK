@@ -20,6 +20,7 @@ Public Class cInstellingen
     Private _SqlStudentKlasLesgroepen As String = ""
     Private _tokengeldigheid As Long = 0
     Private _omgevingsNaam As String = ""
+    Private _CheckenOpUnderscoreGroepen As Boolean = False
 
     Public Property GrantType As String
         Get
@@ -184,6 +185,15 @@ Public Class cInstellingen
         End Set
     End Property
 
+    Public Property CheckenOpUnderscoreGroepen As Boolean
+        Get
+            Return _CheckenOpUnderscoreGroepen
+        End Get
+        Set(value As Boolean)
+            _CheckenOpUnderscoreGroepen = value
+        End Set
+    End Property
+
     Public Sub New()
 
         Try
@@ -204,6 +214,11 @@ Public Class cInstellingen
             Throw New Exception("Kan bestand niet inlezen : 03_studenten_klas-lesgroep.txt")
         End Try
 
+        Try
+            Me.CheckenOpUnderscoreGroepen = ini.GetBoolean("Algemeen", "CheckOpUnderscoreInGroepCode", False)
+        Catch ex As Exception
+            Throw New Exception("Kan waarde van checken op underscore groepen niet opvragen: " & ex.Message)
+        End Try
     End Sub
     Public Function GetToken() As Boolean
         Try
@@ -400,7 +415,7 @@ Public Class cInstellingen
                 opl.Einddatum_werkelijk = dbOsiris.oraGetSafeDate(rd, "Einddatum_werkelijk")
                 opl.TeamCode = dbOsiris.oraSafeGetString(rd, "Teamcodes")
                 opl.TeamNaam = dbOsiris.oraSafeGetString(rd, "Teamnamen")
-
+                opl.cohort = dbOsiris.oraSafeGetDecimal(rd, "Cohort")
                 'aanvullende velden bij de student toevoegen
                 If dictOsirisStudentenKeyStudentNr.ContainsKey(studentNummer) Then
                     'opleidingen bij de student toevoegen
@@ -465,7 +480,6 @@ Public Class cInstellingen
         End Try
         Return True
     End Function
-
 
     Public Function GetStudentsOO() As Boolean
         Try
@@ -532,5 +546,33 @@ Public Class cInstellingen
         Catch ex As Exception
             Throw New Exception("Fout : " & ex.Message)
         End Try
+    End Function
+
+    Public Function CheckOsirisVoorMutaties()
+        'functie controleert diverse tabellen op relevante mutatis
+        'ost_student - STUDENT
+        'OST 
+    End Function
+
+    Public Function OO_JSON_REQUEST(urlRequest As String, sOmschrijving As String, sStudentNummer As String) As String
+        'standaard deel van een request 
+        i.GetToken()    'token opvragen        '
+        Dim client As RestSharp.RestClient
+        Dim request As New RestSharp.RestRequest
+
+        request.Method = RestSharp.Method.POST
+        client = New RestSharp.RestClient(urlRequest)
+        request.AddHeader("Authorization", "Bearer " & i.AuthenticationToken)
+        client.Timeout = -1
+
+        Dim response As RestSharp.RestResponse = client.Execute(request)
+        If response.StatusCode <> Net.HttpStatusCode.OK Then
+            Return False
+        End If
+
+        Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, sOmschrijving, sStudentNummer, response.Content, response.StatusCode.ToString)
+        jsonLog.Write2database()
+        Return response.Content
+
     End Function
 End Class

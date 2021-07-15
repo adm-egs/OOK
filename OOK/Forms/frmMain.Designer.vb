@@ -24,6 +24,7 @@ Partial Class frmMain
     Private Sub InitializeComponent()
         Me.TabControl1 = New System.Windows.Forms.TabControl()
         Me.TabPage1 = New System.Windows.Forms.TabPage()
+        Me.btnDatabaseLogin = New System.Windows.Forms.Button()
         Me.Label3 = New System.Windows.Forms.Label()
         Me.btnOsirisStudentenOpvragen = New System.Windows.Forms.Button()
         Me.Label2 = New System.Windows.Forms.Label()
@@ -39,7 +40,7 @@ Partial Class frmMain
         Me.btnStuurStudentNaarOO = New System.Windows.Forms.Button()
         Me.txtStudentNummer = New System.Windows.Forms.TextBox()
         Me.frmMainStatusStrip = New System.Windows.Forms.StatusStrip()
-        Me.btnDatabaseLogin = New System.Windows.Forms.Button()
+        Me.btnCheckMutaties = New System.Windows.Forms.Button()
         Me.TabControl1.SuspendLayout()
         Me.TabPage1.SuspendLayout()
         Me.TabPage2.SuspendLayout()
@@ -73,6 +74,14 @@ Partial Class frmMain
         Me.TabPage1.TabIndex = 0
         Me.TabPage1.Text = "Onderwijs Online"
         Me.TabPage1.UseVisualStyleBackColor = True
+        '
+        'btnDatabaseLogin
+        '
+        Me.btnDatabaseLogin.Location = New System.Drawing.Point(27, 172)
+        Me.btnDatabaseLogin.Name = "btnDatabaseLogin"
+        Me.btnDatabaseLogin.Size = New System.Drawing.Size(75, 23)
+        Me.btnDatabaseLogin.TabIndex = 6
+        Me.btnDatabaseLogin.UseVisualStyleBackColor = True
         '
         'Label3
         '
@@ -147,6 +156,7 @@ Partial Class frmMain
         '
         'TabPage3
         '
+        Me.TabPage3.Controls.Add(Me.btnCheckMutaties)
         Me.TabPage3.Controls.Add(Me.Label6)
         Me.TabPage3.Controls.Add(Me.Label5)
         Me.TabPage3.Controls.Add(Me.Label4)
@@ -172,11 +182,11 @@ Partial Class frmMain
         'Label5
         '
         Me.Label5.AutoSize = True
-        Me.Label5.Location = New System.Drawing.Point(283, 136)
+        Me.Label5.Location = New System.Drawing.Point(107, 140)
         Me.Label5.Name = "Label5"
-        Me.Label5.Size = New System.Drawing.Size(94, 15)
+        Me.Label5.Size = New System.Drawing.Size(89, 15)
         Me.Label5.TabIndex = 3
-        Me.Label5.Text = "Studentnummer"
+        Me.Label5.Text = "Check mutaties"
         '
         'Label4
         '
@@ -209,13 +219,13 @@ Partial Class frmMain
         Me.frmMainStatusStrip.Size = New System.Drawing.Size(800, 22)
         Me.frmMainStatusStrip.TabIndex = 1
         '
-        'btnDatabaseLogin
+        'btnCheckMutaties
         '
-        Me.btnDatabaseLogin.Location = New System.Drawing.Point(27, 172)
-        Me.btnDatabaseLogin.Name = "btnDatabaseLogin"
-        Me.btnDatabaseLogin.Size = New System.Drawing.Size(75, 23)
-        Me.btnDatabaseLogin.TabIndex = 6
-        Me.btnDatabaseLogin.UseVisualStyleBackColor = True
+        Me.btnCheckMutaties.Location = New System.Drawing.Point(49, 136)
+        Me.btnCheckMutaties.Name = "btnCheckMutaties"
+        Me.btnCheckMutaties.Size = New System.Drawing.Size(42, 23)
+        Me.btnCheckMutaties.TabIndex = 5
+        Me.btnCheckMutaties.UseVisualStyleBackColor = True
         '
         'frmMain
         '
@@ -256,4 +266,5 @@ Partial Class frmMain
     Friend WithEvents Label6 As Label
     Friend WithEvents Label5 As Label
     Friend WithEvents btnDatabaseLogin As Button
+    Friend WithEvents btnCheckMutaties As Button
 End Class

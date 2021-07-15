@@ -211,7 +211,9 @@ Public Class cStudent
         End If
 
         'opleidingen toevoegen
-
+        For Each kv In Opleidingen
+            Debug.Print(kv.Value.CodeVertaaldVoorOO)
+        Next
         'Organisatorische eenheden toevoegen
 
 
@@ -331,24 +333,32 @@ Public Class cStudent
 
         'stap 2 - checken of deze bestaat in OO-> bestaat -> true
         Dim clsGroep As cGroep = VraagGroepOpuitOO(Groep)
+
         If IsNothing(clsGroep) Then
-            'bestaat niet 
-            'checken of die met een _ bestaat
+            'groep bestaat niet 
+            If i.CheckenOpUnderscoreGroepen = False Then    'als we niet verder checken, dan de groep aanmaken in OO
+                Return GroepInOoAanmaken(Groep)
+            End If
+
+            'We checken of de groep[ met een - in plaats van een _ in de code bestaat
             Dim sGroepsCodeOrigineel As String = Groep
             Groep = Strings.Replace(Groep, "-", "_")
             clsGroep = VraagGroepOpuitOO(Groep)
+
             If IsNothing(clsGroep) Then
-                'ook met _ in de code bestaat deze niet 
-                'groep aanmaken
+                'ook met - in de code bestaat deze niet 
+                'dus -> groep aanmaken
                 Return GroepInOoAanmaken(sGroepsCodeOrigineel)
             Else
                 'groep bestaat  in OO dus dictGroepen aanvullen voor verdere snelle verwerking
                 If Not dAlleGroepen.ContainsKey(clsGroep.Code) Then
                     dAlleGroepen.Add(clsGroep.Code, clsGroep)
                 End If
+
                 If Not dAlleGroepen.ContainsKey(sGroepsCodeOrigineel) Then  'ook de variant met _ toevoegen
                     dAlleGroepen.Add(sGroepsCodeOrigineel, clsGroep)
                 End If
+
                 Return True
             End If
 
@@ -408,34 +418,38 @@ Public Class cStudent
     End Function
 
     Private Function GroepInOoAanmaken(sGroepscode As String) As Boolean
-        'put request doen naar OO
+        'Groep aanmaken in OO 
+
         l.LOGTHIS("Aan te maken groep : " & sGroepscode)
-        'https://mboutrechttest.onderwijsonline.nl/api/v1/team?name=ENG-TEC4B&team_type_id=1
-        i.GetToken()    'token opvragen        '
+        'voorbeeld request : (put) https://mboutrechttest.onderwijsonline.nl/api/v1/team?name=ENG-TEC4B&team_type_id=1
 
-        Dim client As RestSharp.RestClient
-        Dim request As New RestSharp.RestRequest
+        'i.GetToken()    'token opvragen        '
+        'Dim client As RestSharp.RestClient
+        'Dim request As New RestSharp.RestRequest
 
-        request.Method = RestSharp.Method.POST
-        client = New RestSharp.RestClient(dURLS("TeamGet") & "?name=" & sGroepscode & "&team_type_id=1")
-        request.AddHeader("Authorization", "Bearer " & i.AuthenticationToken)
-        client.Timeout = -1
+        'request.Method = RestSharp.Method.POST
+        'client = New RestSharp.RestClient(dURLS("TeamGet") & "?name=" & sGroepscode & "&team_type_id=1")
+        'request.AddHeader("Authorization", "Bearer " & i.AuthenticationToken)
+        'client.Timeout = -1
 
-        Dim response As RestSharp.RestResponse = client.Execute(request)
-        If response.StatusCode <> Net.HttpStatusCode.OK Then
-            Return False
-        End If
+        'Dim response As RestSharp.RestResponse = client.Execute(request)
+        'If response.StatusCode <> Net.HttpStatusCode.OK Then
+        '    Return False
+        'End If
 
-        Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, "Groep aanmaken in OO " & sGroepscode, StudentNummer, response.Content, response.StatusCode.ToString)
-        jsonLog.Write2database()
+        'Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, "Groep aanmaken in OO " & sGroepscode, StudentNummer, response.Content, response.StatusCode.ToString)
+        'jsonLog.Write2database()
 
-        Dim json As JObject = JObject.Parse(response.Content)
+        'Dim json As JObject = JObject.Parse(response.Content)
+
+
+        Dim json As JObject = i.OO_JSON_REQUEST(dURLS("TeamGet") & "?name=" & sGroepscode & "&team_type_id=1", "Groep aanmaken in OO " & sGroepscode, StudentNummer)
         Dim ResponseError As JValue = json.SelectToken("error")
         If CBool(ResponseError.Value) = False Then
             'geldige response
             Dim dataValue As JObject = json.SelectToken("data.data[0]")
             If IsNothing(dataValue) Then
-                Return Nothing
+                Return False
             End If
 
             Dim sContent As String = dataValue.ToString
@@ -445,6 +459,7 @@ Public Class cStudent
             cReturnGroep.OOid = CLng(jsonContent("id").ToString)
             cReturnGroep.Code = jsonContent("name").ToString
             cReturnGroep.TeamTypeId = CLng(jsonContent("team_type_id").ToString)
+
             If Not dAlleGroepen.ContainsKey(cReturnGroep.Code) Then
                 dAlleGroepen.Add(cReturnGroep.Code, cReturnGroep)
             End If

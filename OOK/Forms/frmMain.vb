@@ -109,4 +109,9 @@ Public Class frmMain
         End While
         l.LOGTHIS(count & " mutaties gevonden")
     End Sub
+
+    Private Sub btnCheckMutaties_Click(sender As Object, e As EventArgs) Handles btnCheckMutaties.Click
+        'controleren of er mutaties zijn die gedaan moeten worden
+
+    End Sub
 End Class

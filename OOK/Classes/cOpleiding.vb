@@ -7,7 +7,7 @@
     Private _einddatum_werkelijk As Date
     Private _teamCode As String
     Private _teamNaam As String
-
+    Private _cohort As Integer
 
     Public Property Code As String
         Get
@@ -21,11 +21,27 @@
         Get
             Dim sHulp As String = UCase(_code)
             If Right(sHulp, 1) = "O" Then
-
+                sHulp = Left(sHulp, Len(sHulp) - 1) & "BOL"
             End If
 
+            If Right(sHulp, 1) = "B" Then
+                sHulp = Left(sHulp, Len(sHulp) - 1) & "BBL"
+            End If
+
+            Return sHulp
         End Get
     End Property
+
+    Public Property cohort As Integer
+        Get
+            Return Me.Startdatum.Year
+        End Get
+        Set(value As Integer)
+
+        End Set
+    End Property
+
+
 
     Public Property Naam As String
         Get
@@ -92,6 +108,15 @@
         End Get
         Set(value As String)
             _teamNaam = value
+        End Set
+    End Property
+
+    Public Property Cohort1 As Integer
+        Get
+            Return _cohort
+        End Get
+        Set(value As Integer)
+            _cohort = value
         End Set
     End Property
 End Class
