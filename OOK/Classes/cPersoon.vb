@@ -71,8 +71,6 @@ Public Class cPersoon
         End Set
     End Property
 
-
-
     Public Property Roepnaam As String
         Get
             Return _firstname
@@ -121,7 +119,16 @@ Public Class cPersoon
         End Set
     End Property
 
-
+    Public ReadOnly Property VolledigeNaam As String
+        Get
+            Dim sHulp As String = Me.Roepnaam
+            If Me.Tussenvoegsels <> "" Then
+                sHulp &= " " & Me.Tussenvoegsels
+            End If
+            sHulp &= " " & Achternaam
+            Return sHulp
+        End Get
+    End Property
     Public Property Created_at As String
         Get
             Return _created_at

@@ -23,10 +23,7 @@ Public Class frmMain
         i = New cInstellingen
         l.LOGTHIS("***************** System startup ******************")
 
-        If i.LoadDefaults = False Then
-            l.LOGTHIS("Opvragen instellingen niet gelukt")
-            End
-        End If
+
 
         dbOsiris = New cDbUtils
         dbMiddleWare = New cDbUtils
@@ -34,7 +31,10 @@ Public Class frmMain
         dbOsiris.oraConString = "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.69.31)(PORT=1523))(CONNECT_DATA=(SERVICE_NAME=utrtsts)));User Id=MBOUMW21;Password=Appelmoes_Zwemmen_93355;"
         dbMiddleWare.sqlConstring = "Provider=MSOLEDBSQL;Server=SQL803354-PRD;Database=Koppel;UID=ook_user_middleware;PWD=v@!SExwku5BTOa%tWq!3"
         Me.txtStudentNummer.Text = ini.GetString("algemeen", "laststudent", "")
-
+        If i.LoadDefaults = False Then
+            l.LOGTHIS("Opvragen instellingen niet gelukt")
+            End
+        End If
     End Sub
 
     Private Sub TabControl1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TabControl1.SelectedIndexChanged
@@ -59,7 +59,7 @@ Public Class frmMain
     Private Sub btnStuurStudentNaarOO_Click(sender As Object, e As EventArgs) Handles btnStuurStudentNaarOO.Click
         'student opvragen uit Osiris en vervolgens doorzenden naar Onderwijs Online
         '20210705 - EGS
-        Dim s As New cStudent
+        Dim s As New cStudentBasis
         If Me.txtStudentNummer.Text = "" Then
             MsgBox("Vul een studentnummer in")
             Exit Sub
@@ -67,7 +67,7 @@ Public Class frmMain
 
         'student opvragen uit OO
         Dim bolGelukt As Boolean = i.GetStudentsOsiris(Me.txtStudentNummer.Text)
-        Dim student As cStudent
+        Dim student As cStudentBasis
         If bolGelukt = True Then
             Try
                 If dictOsirisStudentenKeyStudentNr.ContainsKey(Me.txtStudentNummer.Text) Then   'zijn de gegevens van de student bekend?
@@ -112,6 +112,18 @@ Public Class frmMain
 
     Private Sub btnCheckMutaties_Click(sender As Object, e As EventArgs) Handles btnCheckMutaties.Click
         'controleren of er mutaties zijn die gedaan moeten worden
+        If dictOsirisStudentenKeyStudentNr.ContainsKey(Me.txtStudentNummer.Text) Then
+            dictOsirisStudentenKeyStudentNr.Remove(Me.txtStudentNummer.Text)
+        End If
+        i.GetStudentsOsiris(Me.txtStudentNummer.Text)
+
+        If dictOsirisStudentenKeyStudentNr.ContainsKey(Me.txtStudentNummer.Text) Then
+            Dim s As cStudentBasis = dictOsirisStudentenKeyStudentNr(Me.txtStudentNummer.Text)
+            Me.tvStudentData.Nodes.Add(s.Osiris_node)
+        Else
+            MsgBox("Student niet gevonden")
+        End If
+
 
     End Sub
 End Class

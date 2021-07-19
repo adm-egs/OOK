@@ -1,0 +1,4 @@
+﻿Opleidingen checken in OO op aanwezigheid
+Opleidingen aanmaken
+Teams checken op Aanwezigheid
+Teams aanmaken

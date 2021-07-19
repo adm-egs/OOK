@@ -3,6 +3,8 @@ Imports System.Net
 Imports Newtonsoft.Json.Linq
 Imports Oracle.ManagedDataAccess.Client
 
+
+
 Public Class cInstellingen
     Private Property _BasisUrl As String
     Private Property _clientId As String
@@ -21,6 +23,8 @@ Public Class cInstellingen
     Private _tokengeldigheid As Long = 0
     Private _omgevingsNaam As String = ""
     Private _CheckenOpUnderscoreGroepen As Boolean = False
+    Private _SqlOpleidingenOpvragen As String = ""
+
 
     Public Property GrantType As String
         Get
@@ -194,6 +198,15 @@ Public Class cInstellingen
         End Set
     End Property
 
+    Public Property SqlOpleidingenOpvragen As String
+        Get
+            Return _SqlOpleidingenOpvragen
+        End Get
+        Set(value As String)
+            _SqlOpleidingenOpvragen = value
+        End Set
+    End Property
+
     Public Sub New()
 
         Try
@@ -215,10 +228,18 @@ Public Class cInstellingen
         End Try
 
         Try
+            SqlOpleidingenOpvragen = getQuery("osiris\04_opleidingen.txt")
+        Catch ex As Exception
+            Throw New Exception("Kan bestand niet inlezen : osiris\04_opleidingen.txt ")
+        End Try
+
+        Try
             Me.CheckenOpUnderscoreGroepen = ini.GetBoolean("Algemeen", "CheckOpUnderscoreInGroepCode", False)
         Catch ex As Exception
             Throw New Exception("Kan waarde van checken op underscore groepen niet opvragen: " & ex.Message)
         End Try
+
+
     End Sub
     Public Function GetToken() As Boolean
         Try
@@ -286,6 +307,41 @@ Public Class cInstellingen
             ClientSecret = ini.GetString("connect", "client_secret", "")
             OmgevingsNaam = ini.GetString("algemeen", "omgeving", "onbekend")
 
+            'vullen dictionary Opleidingen
+            Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlOpleidingenOpvragen)
+            If rd.HasRows = False Then
+                rd.Close()
+                FatalError("Geen opleidingen beschikbaar in de Osiris database")
+            End If
+            dAlleOpleidingen.Clear()
+            While rd.Read
+                Dim o As New cOpleiding
+                Try
+
+
+
+                    o.Code = dbOsiris.oraSafeGetString(rd, "Opleidingscode")
+                    o.Ople_Id = dbOsiris.oraSafeGetDecimal(rd, "id_opleiding")
+                    o.Naam = dbOsiris.oraSafeGetString(rd, "Opleidingsnaam")
+                    o.TeamCode = dbOsiris.oraSafeGetString(rd, "Teamcodes")
+                    o.TeamNaam = dbOsiris.oraSafeGetString(rd, "Teamnamen")
+                    o.Leerweg = dbOsiris.oraSafeGetString(rd, "Leerweg")
+                    Try
+                        o.Niveau = CInt(dbOsiris.oraSafeGetString(rd, "Niveau"))
+                    Catch ex3 As Exception
+                        o.Niveau = 0
+                    End Try
+
+                    If Not dAlleOpleidingen.ContainsKey(o.Ople_Id) Then
+                        dAlleOpleidingen.Add(o.Ople_Id, o)
+                    Else
+                        Application.DoEvents()
+                    End If
+                Catch ex2 As Exception
+                    Application.DoEvents()
+                End Try
+            End While
+
         Catch ex As Exception
             l.LOGTHIS("Fout bij opvragen default instellingen")
             Return False
@@ -328,7 +384,7 @@ Public Class cInstellingen
             End If
             While rd.Read
                 'studentobject vullen
-                Dim s As cStudent = GetStudentDataOsiris(rd)
+                Dim s As cStudentBasis = GetStudentDataOsiris(rd)
 
                 If Not dictOsirisStudentenKeyStudentNr.ContainsKey(s.Id) Then
                     dictOsirisStudentenKeyStudentNr.Add(s.Id, s)
@@ -361,9 +417,9 @@ Public Class cInstellingen
         End If
     End Function
 
-    Public Shared Function GetStudentDataOsiris(rd As OracleDataReader) As cStudent
+    Public Shared Function GetStudentDataOsiris(rd As OracleDataReader) As cStudentBasis
 
-        Dim s As New cStudent
+        Dim s As New cStudentBasis
         With s
             .Id = dbOsiris.oraSafeGetDecimal(rd, "ID")
             .Username = .Id
@@ -383,7 +439,7 @@ Public Class cInstellingen
         Return s
 
     End Function
-    Private Function GetStudentOpleidingenOsiris(Optional sStudentNr As String = "") As Boolean
+    Public Function GetStudentOpleidingenOsiris(Optional sStudentNr As String = "") As Boolean
 
         'alle opleidingen van de studenten opvragen en deze aanvullen bij de studenten uit de dictOsirisStudenten
 
@@ -406,24 +462,32 @@ Public Class cInstellingen
         Try
             Dim studentNummer As String = ""
             While rd.Read
-                Dim opl As New cOpleiding
+                Dim opl As New cOpleidingsDeelname
                 studentNummer = dbOsiris.oraSafeGetDecimal(rd, "studentnummer")
-                opl.Code = dbOsiris.oraSafeGetString(rd, "Opleidingscode")
-                opl.Naam = dbOsiris.oraSafeGetString(rd, "Opleidingsnaam")
-                opl.Startdatum = dbOsiris.oraGetSafeDate(rd, "Startdatum")
-                opl.Einddatum = dbOsiris.oraGetSafeDate(rd, "Einddatum")
-                opl.Einddatum_werkelijk = dbOsiris.oraGetSafeDate(rd, "Einddatum_werkelijk")
-                opl.TeamCode = dbOsiris.oraSafeGetString(rd, "Teamcodes")
-                opl.TeamNaam = dbOsiris.oraSafeGetString(rd, "Teamnamen")
-                opl.cohort = dbOsiris.oraSafeGetDecimal(rd, "Cohort")
+                opl.StartDatum = dbOsiris.oraGetSafeDate(rd, "Startdatum")
+                opl.EindDatum = dbOsiris.oraGetSafeDate(rd, "Einddatum")
+                opl.EindDatumWerkelijk = dbOsiris.oraGetSafeDate(rd, "Einddatum_werkelijk")
+                opl.CreboNr = dbOsiris.oraSafeGetString(rd, "Opleidingscode")
+                opl.Teamcode = dbOsiris.oraSafeGetString(rd, "Teamcodes")
+                opl.Cohort = dbOsiris.oraSafeGetDecimal(rd, "Cohort")
+                opl.Ople_id = dbOsiris.oraSafeGetDecimal(rd, "id_opleiding")
+                opl.StudentOokId = dbOsiris.oraSafeGetDecimal(rd, "ook_id")
                 'aanvullende velden bij de student toevoegen
                 If dictOsirisStudentenKeyStudentNr.ContainsKey(studentNummer) Then
                     'opleidingen bij de student toevoegen
-                    If Not dictOsirisStudentenKeyStudentNr(studentNummer).Opleidingen.ContainsKey(opl.UniqueKey) Then
-                        dictOsirisStudentenKeyStudentNr(studentNummer).Opleidingen.Add(opl.UniqueKey, opl)
+                    If Not dictOsirisStudentenKeyStudentNr(studentNummer).Opleidingen.ContainsKey(opl.StudentOokId) Then
+                        dictOsirisStudentenKeyStudentNr(studentNummer).Opleidingen.Add(opl.StudentOokId, opl)
+                    End If
+
+                    'opleidingen toevoegen
+                    If Not dAlleOpleidingen.ContainsKey(opl.Ople_id) Then
+                        Dim o As New cOpleiding
+                        o.Ople_Id = opl.Ople_id
+                        o.Code = opl.CreboNr
+
                     End If
                     'teams toevoegen
-                    dictOsirisStudentenKeyStudentNr(studentNummer).AddTeam(opl.TeamNaam, opl.TeamNaam)
+                    ' dictOsirisStudentenKeyStudentNr(studentNummer).AddTeam(opl.TeamNaam, opl.TeamNaam)
 
                 Else
                     l.LOGTHIS("student niet gevonden voor opleiding: " & studentNummer)
@@ -439,7 +503,8 @@ Public Class cInstellingen
         Return True
     End Function
 
-    Private Function GetStudentKlassen(Optional sStudentNr As String = "") As Boolean
+    Public Function GetStudentKlassen(Optional sStudentNr As String = "") As Boolean
+
         l.LOGTHIS("Klassen bij de studenten opvragen en invullen")
         Dim rd As OracleDataReader
         If sStudentNr = "" Then
@@ -573,6 +638,11 @@ Public Class cInstellingen
         Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, sOmschrijving, sStudentNummer, response.Content, response.StatusCode.ToString)
         jsonLog.Write2database()
         Return response.Content
+
+    End Function
+
+    Public Function LoadOpleidingenOsiris() As Boolean
+        'functie vult de dictionary Opleidingen met de data uit Osiris
 
     End Function
 End Class

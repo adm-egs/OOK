@@ -1,12 +1,12 @@
 ﻿Imports Newtonsoft.Json.Linq
 
-Public Class cStudent
+Public Class cStudentBasis
 #Region "properties"
 
 
     Inherits cPersoon
     Private _WerkMailAdres As String
-    Private _opleidingen As New Dictionary(Of String, cOpleiding)
+    Private _opleidingen As New Dictionary(Of String, cOpleidingsDeelname)
     Private _GroepsDeelnames As New Dictionary(Of String, cGroepsDeelname)
     Private _OOid As Long = -1
     Private _bekendInOO As Boolean = False
@@ -25,11 +25,11 @@ Public Class cStudent
         End Set
     End Property
 
-    Public Property Opleidingen As Dictionary(Of String, cOpleiding)
+    Public Property Opleidingen As Dictionary(Of String, cOpleidingsDeelname)
         Get
             Return _opleidingen
         End Get
-        Set(value As Dictionary(Of String, cOpleiding))
+        Set(value As Dictionary(Of String, cOpleidingsDeelname))
             _opleidingen = value
         End Set
     End Property
@@ -128,9 +128,18 @@ Public Class cStudent
 
 
     Public Function GetStudentUitOoOpBasisVanStudentNummer() As Boolean
+        Dim c As cStudentBasis = GetStudentClassUitOoStudentNummer(Me.StudentNummer, True)
+        If IsNothing(c) Then
+            Return False
+        Else
+            Return True
+        End If
+    End Function
+
+    Public Function GetStudentClassUitOoStudentNummer(sStudentNummer As String, Add2Personen As Boolean) As cStudentBasis
         'gegevens student uit OO opvragen
         Dim request As New RestSharp.RestRequest()
-        Dim client As New RestSharp.RestClient(dURLS("StudentGet") & "?username=" & Me.StudentNummer)
+        Dim client As New RestSharp.RestClient(dURLS("StudentGet") & "?username=" & sStudentNummer)
         Dim response As RestSharp.RestResponse
         Try
 
@@ -152,7 +161,7 @@ Public Class cStudent
 
             If dataUser.Count = 0 Then
                 BekendInOO = False
-                Return False
+                Return Nothing
             Else
                 BekendInOO = True
             End If
@@ -162,21 +171,24 @@ Public Class cStudent
                 getUserData(jUser)
                 'Dim s As New cStudent
                 's.getUserData(jUser)    'velden invullen in object
-                If dPersonen.ContainsKey(StudentNummer) Then
-                    dPersonen.Remove(StudentNummer)
+                If Add2Personen = True Then
+                    If dPersonen.ContainsKey(StudentNummer) Then
+                        dPersonen.Remove(StudentNummer)
+                    End If
+                    dPersonen.Add(StudentNummer, Me)
+                Else
+                    Return Me
                 End If
-                dPersonen.Add(StudentNummer, Me)
+
             Next
-
-
-            Return True
+            Return Me
         Catch ex As Exception
             Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, "Opvragen student uit OO", StudentNummer, response.Content, response.StatusCode.ToString)
             jsonLog.Gelukt = "N"
             jsonLog.Write2database()
 
 
-            Return False
+            Return Nothing
         End Try
     End Function
 
@@ -212,7 +224,7 @@ Public Class cStudent
 
         'opleidingen toevoegen
         For Each kv In Opleidingen
-            Debug.Print(kv.Value.CodeVertaaldVoorOO)
+            Debug.Print(kv.Value.CreboNr)
         Next
         'Organisatorische eenheden toevoegen
 
@@ -319,7 +331,7 @@ Public Class cStudent
         Return Okresult
     End Function
 
-    Private Function BestaatGroepInOO(Groep As String) As Boolean
+    Public Function BestaatGroepInOO(Groep As String) As Boolean
         'functie controleert of de groep bestaat, zo niet -> aanmaken
         'true -> aangemaakt of bestaat al
         'false -> bestaat niet en kon niet aangemaakt worden
@@ -418,30 +430,7 @@ Public Class cStudent
     End Function
 
     Private Function GroepInOoAanmaken(sGroepscode As String) As Boolean
-        'Groep aanmaken in OO 
-
-        l.LOGTHIS("Aan te maken groep : " & sGroepscode)
-        'voorbeeld request : (put) https://mboutrechttest.onderwijsonline.nl/api/v1/team?name=ENG-TEC4B&team_type_id=1
-
-        'i.GetToken()    'token opvragen        '
-        'Dim client As RestSharp.RestClient
-        'Dim request As New RestSharp.RestRequest
-
-        'request.Method = RestSharp.Method.POST
-        'client = New RestSharp.RestClient(dURLS("TeamGet") & "?name=" & sGroepscode & "&team_type_id=1")
-        'request.AddHeader("Authorization", "Bearer " & i.AuthenticationToken)
-        'client.Timeout = -1
-
-        'Dim response As RestSharp.RestResponse = client.Execute(request)
-        'If response.StatusCode <> Net.HttpStatusCode.OK Then
-        '    Return False
-        'End If
-
-        'Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, "Groep aanmaken in OO " & sGroepscode, StudentNummer, response.Content, response.StatusCode.ToString)
-        'jsonLog.Write2database()
-
-        'Dim json As JObject = JObject.Parse(response.Content)
-
+        'Groep aanmaken in OO, indien gelukt de gegevens opslaan in de dictionary
 
         Dim json As JObject = i.OO_JSON_REQUEST(dURLS("TeamGet") & "?name=" & sGroepscode & "&team_type_id=1", "Groep aanmaken in OO " & sGroepscode, StudentNummer)
         Dim ResponseError As JValue = json.SelectToken("error")
@@ -455,12 +444,14 @@ Public Class cStudent
             Dim sContent As String = dataValue.ToString
             Dim jsonContent As JObject = JObject.Parse(sContent)
             jsonContent.CreateReader()
+            'groep is aangemaakt. meegeleverde data van OO opslaan
             Dim cReturnGroep As New cGroep
             cReturnGroep.OOid = CLng(jsonContent("id").ToString)
             cReturnGroep.Code = jsonContent("name").ToString
             cReturnGroep.TeamTypeId = CLng(jsonContent("team_type_id").ToString)
 
             If Not dAlleGroepen.ContainsKey(cReturnGroep.Code) Then
+                '2do groepsdata opslaan in temp tabel van de Middleware voor de volgende keer
                 dAlleGroepen.Add(cReturnGroep.Code, cReturnGroep)
             End If
             Return True
@@ -510,4 +501,44 @@ Public Class cStudent
 
     End Function
 
+    Public Function BestaatOpleidingInOO(sOpleiding As String) As Boolean
+        'functie controleert of de opleiding bestaat, zo niet -> aanmaken
+        'true -> aangemaakt of bestaat al
+        'false -> bestaat niet en kon niet aangemaakt worden
+
+        'stap 1 - al eerder vandaag gecheckt? -> bestaat -> true
+        If dAlleOpleidingen.ContainsKey(sOpleiding) Then
+            If dAlleOpleidingen(sOpleiding).Ople_Id <> -1 Then
+                Return True
+            End If
+        End If
+    End Function
+
+    Public Function Osiris_node() As TreeNode
+        'maakt een node aan voor een treeview met studentdata
+        Dim ndHoofd As New TreeNode(Me.StudentNummer)
+        Dim ndOsiris As New TreeNode(Me.StudentNummer & " - Osiris")
+        Dim ndNaw As TreeNode = ndOsiris.Nodes.Add(Me.VolledigeNaam)
+        Dim ndOpleidingen As New TreeNode("Opleiding")
+        Dim ndKlassen As New TreeNode("Klassen")
+
+        For Each kv In Me.GroepsDeelnames
+            ndKlassen.Nodes.Add(kv.Value.GroepsCode & " " & kv.Value.IngangsDatum & " - " & kv.Value.AfloopDatum)
+        Next
+        For Each kv In Me.Opleidingen
+            Dim ndOpleiding As New TreeNode(kv.Value.CreboNr)
+            ndOpleiding.Nodes.Add("Cohort :" & kv.Value.cohort)
+            ndOpleiding.Nodes.Add("Crebo  :" & kv.Value.CreboNr)
+            'ndOpleiding.Nodes.Add("Naam   : " & kv.Value.
+            ndOpleiding.Nodes.Add("Team   : " & kv.Value.Teamcode) '& " - " & kv.Value.TeamNaam)
+            ndOpleiding.Nodes.Add("Start  : " & kv.Value.StartDatum)
+            ndOpleiding.Nodes.Add("Eind   : " & kv.Value.EindDatumWerkelijk)
+            ndOpleidingen.Nodes.Add(ndOpleiding)
+        Next
+        ndOsiris.Nodes.Add(ndKlassen)
+        ndOsiris.Nodes.Add(ndOpleidingen)
+        ndOsiris.ExpandAll()
+        Return ndOsiris
+
+    End Function
 End Class

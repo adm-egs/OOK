@@ -8,6 +8,9 @@
     Private _teamCode As String
     Private _teamNaam As String
     Private _cohort As Integer
+    Private _leerweg As String = ""
+    Private _niveau As Integer = -1
+    Private _ople_id As Long = -1    '-1 -> not set
 
     Public Property Code As String
         Get
@@ -17,31 +20,16 @@
             _code = value
         End Set
     End Property
-    Public ReadOnly Property CodeVertaaldVoorOO As String
-        Get
-            Dim sHulp As String = UCase(_code)
-            If Right(sHulp, 1) = "O" Then
-                sHulp = Left(sHulp, Len(sHulp) - 1) & "BOL"
-            End If
 
-            If Right(sHulp, 1) = "B" Then
-                sHulp = Left(sHulp, Len(sHulp) - 1) & "BBL"
-            End If
-
-            Return sHulp
-        End Get
-    End Property
 
     Public Property cohort As Integer
         Get
-            Return Me.Startdatum.Year
+            Return _cohort
         End Get
         Set(value As Integer)
-
+            _cohort = value
         End Set
     End Property
-
-
 
     Public Property Naam As String
         Get
@@ -84,14 +72,7 @@
         End Set
     End Property
 
-    Public ReadOnly Property UniqueKey As String
-        Get
-            Dim sHulp As String = Code & "_"
-            sHulp &= Startdatum.ToShortDateString & "_"
-            sHulp &= Einddatum.ToShortDateString
-            Return sHulp
-        End Get
-    End Property
+
 
     Public Property TeamCode As String
         Get
@@ -111,12 +92,34 @@
         End Set
     End Property
 
-    Public Property Cohort1 As Integer
+    Public Property Ople_Id As Long
         Get
-            Return _cohort
+            Return _ople_id
         End Get
-        Set(value As Integer)
-            _cohort = value
+        Set(value As Long)
+            _ople_id = value
         End Set
     End Property
+
+    Public Property Leerweg As String
+        Get
+            Return _leerweg
+        End Get
+        Set(value As String)
+            _leerweg = value
+        End Set
+    End Property
+
+    Public Property Niveau As Integer
+        Get
+            Return _niveau
+        End Get
+        Set(value As Integer)
+            _niveau = value
+        End Set
+    End Property
+
+    Public Function BestaatInOO() As Boolean
+        'opleidingen worden gecontroleerd op basis van het veld foreign_id, deze bevat het ople_id van de opleiding
+    End Function
 End Class
