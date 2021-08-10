@@ -245,6 +245,7 @@ Public Class cStudentBasis
         VoegOpleidingenToeAanStudentInOO()
 
         'Organisatorische eenheden toevoegen in OO zijn dit teams
+        Dim first As Boolean = False    'sync is al gedaan bij groepen
         For Each kv In Opleidingen
             'check of team bekend is in OO : kv.Value.Teamcode
             Dim sTeamcode As String = kv.Value.Teamcode
@@ -254,12 +255,35 @@ Public Class cStudentBasis
                     'ID in ondewijsonline is onbekend en kon niet worden aangemaakt
                     l.LOGTHIS("Kan student niet aan team koppelen : Team bestaat niet in OO:" & sTeamcode)
                     Return False
-                End If
-            End If
+                Else
+                    'student aan team koppelen
+                    Dim sOOsyncTeam As String = dURLS("StudentGet") & "/" & Me.OOid & "/teams/sync?team_ids[]=" & t.OoID
+                    Dim sOOAddTeam As String = dURLS("StudentGet") & "/" & Me.OOid & "/teams/attach?team_ids[]=" & t.OoID
 
+                    Dim sJsonResult As String = ""
+                    If first Then
+                        sJsonResult = i.OO_JSON_REQUEST(sOOsyncTeam, "Student aan team sync :" & t.Naam, StudentNummer, RestSharp.Method.POST)
+                        first = False
+                    Else
+                        sJsonResult = i.OO_JSON_REQUEST(sOOAddTeam, "Student aan team koppelen :" & t.Naam, StudentNummer, RestSharp.Method.POST)
+                    End If
+                    Dim json As JObject = JObject.Parse(sJsonResult)
+                    Dim ResponseError As JValue = json.SelectToken("error")
+                    If CBool(ResponseError.Value) = False Then
+                        l.LOGTHIS("Student aan team gekoppeld : " & t.Code, 1)
+
+                    Else
+                        l.LOGTHIS("Student aan team koppelen niet gelukt :" & t.Code, 1)
+                        Return False
+                    End If
+                End If
+            Else
+                l.LOGTHIS("Onbekend team gevonden : " & sTeamcode, 1)
+                Return False
+            End If
         Next
 
-
+        Return True
 
     End Function
     Private Function CreateOrUpdateUserNAW(Optional bolCreate As Boolean = False) As Boolean
@@ -349,16 +373,17 @@ Public Class cStudentBasis
     Private Function VoegKlassenToe() As Boolean
         'alle klassen die bij de student zijn geladen naar TP sturen
         Dim Okresult As Boolean = True
-
+        Dim first As Boolean = True
         For Each kv In GroepsDeelnames
             'stap 1 - controleer of de groep bestaat
             If BestaatGroepInOO(kv.Value.GroepsCode) = True Then  'controleer of de groep bestaat true als deze bestaat of aangemaakt is
                 'groepsdeelname bij student toevoegen
-                If VoegGroepBijStudentToeInOO(kv.Value) = False Then
+                If VoegGroepBijStudentToeInOO(kv.Value, first) = False Then
                     Okresult = False
+                Else
+                    first = False
                 End If
             End If
-
 
         Next
         Return Okresult
@@ -494,7 +519,7 @@ Public Class cStudentBasis
 
     End Function
 
-    Private Function VoegGroepBijStudentToeInOO(Groep As cGroepsDeelname) As Boolean
+    Private Function VoegGroepBijStudentToeInOO(Groep As cGroepsDeelname, first As Boolean) As Boolean
 
         'https://mboutrechttest.onderwijsonline.nl/api/v1/user/:id/groups/attach?group_ids[]=3&group_ids[]=6&group_ids[]=8 
         'Dim cJsonLog As New cJsonLogItem
@@ -511,7 +536,14 @@ Public Class cStudentBasis
         End If
 
         i.GetToken()    'token opvragen        '
-        Dim sAttach As String = "/" & OOid & "/teams/attach?team_ids[]=" & dAlleGroepen(Groep.GroepsCode).OOid
+
+        Dim sAttach As String = ""
+        If first Then
+            sAttach = "/" & OOid & "/teams/sync?team_ids[]=" & dAlleGroepen(Groep.GroepsCode).OOid
+        Else
+            sAttach = "/" & OOid & "/teams/attach?team_ids[]=" & dAlleGroepen(Groep.GroepsCode).OOid
+        End If
+
         Dim client As RestSharp.RestClient
         Dim request As New RestSharp.RestRequest
 

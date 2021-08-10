@@ -50,8 +50,14 @@ Public Class frmMain
     End Sub
 
     Private Sub btnOsirisStudentenOpvragen_Click(sender As Object, e As EventArgs) Handles btnOsirisStudentenOpvragen.Click
-        If dictOsirisStudentenKeyStudentNr.Count = 0 Then i.GetStudentsOsiris()
+        i.GetStudentsOsiris()
         l.LOGTHIS(dictOsirisStudentenKeyStudentNr.Count & " studenten ingeladen")
+        Dim count As Long = 0
+        For Each student In dictOsirisStudentenKeyStudentNr
+            Debug.Print(student.Value.StudentNummer & ";" & student.Value.VolledigeNaam)
+            count += 1
+            'If count >= 50 Then Exit For
+        Next
         'vergelijken studenten met OO
 
     End Sub
