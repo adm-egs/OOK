@@ -148,11 +148,11 @@ Partial Class frmMain
         '
         'txtLog
         '
-        Me.txtLog.Location = New System.Drawing.Point(28, 15)
+        Me.txtLog.Location = New System.Drawing.Point(18, 15)
         Me.txtLog.Multiline = True
         Me.txtLog.Name = "txtLog"
         Me.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.txtLog.Size = New System.Drawing.Size(600, 245)
+        Me.txtLog.Size = New System.Drawing.Size(359, 245)
         Me.txtLog.TabIndex = 0
         '
         'TabPage3
@@ -223,7 +223,7 @@ Partial Class frmMain
         '
         'tvStudentData
         '
-        Me.tvStudentData.Location = New System.Drawing.Point(417, 36)
+        Me.tvStudentData.Location = New System.Drawing.Point(429, 32)
         Me.tvStudentData.Name = "tvStudentData"
         Me.tvStudentData.Size = New System.Drawing.Size(371, 371)
         Me.tvStudentData.TabIndex = 7

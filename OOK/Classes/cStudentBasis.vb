@@ -121,6 +121,7 @@ Public Class cStudentBasis
             End If
         Else
             'bekend in OO -> updaten
+            ChangeUserInOO(False)   'update user
         End If
 
         Return True
@@ -195,12 +196,12 @@ Public Class cStudentBasis
     Public Function ChangeUserInOO(Optional bolCreate As Boolean = False) As Boolean
         'functie maakt de user aan in OO of update
         If BekendInOO = True Then
-            If CreateOrUpdateUser(False) = False Then
+            If CreateOrUpdateUserNAW(False) = False Then
                 l.LOGTHIS("Update student niet gelukt")
                 Return False
             End If
         Else
-            If CreateOrUpdateUser(True) = False Then
+            If CreateOrUpdateUserNAW(True) = False Then
                 l.LOGTHIS("Create student niet gelukt")
                 Return False
             End If
@@ -222,15 +223,46 @@ Public Class cStudentBasis
             Return False
         End If
 
-        'opleidingen toevoegen
+        'opleidingen toevoegen 
+        '2do zit nog niet goed in elkaar, werkt wel
+        'student aan opleiding koppelen
         For Each kv In Opleidingen
-            Debug.Print(kv.Value.CreboNr)
+            'check of de opleiding bestaat
+            If dAlleOpleidingen.ContainsKey(kv.Value.Ople_id) Then
+                'controleren of deze jaarversie ook bestaat
+                Dim o As cOpleiding = dAlleOpleidingen(kv.Value.Ople_id)
+                If Not o.VersiesInOO.ContainsKey(kv.Value.Cohort) Then
+                    'of deze versie bestaat is niet bekend -> check in OO
+                    ' o.BestaatinOO(kv.Value.Cohort)
+                    If o.BestaatinOO(kv.Value.Cohort) Then  'Check in OO of deze versie bestaat
+                    End If
+                End If
+            Else
+                'zou niet voormogen komen
+                l.LOGTHIS("opleiding bestaat niet ID=" & kv.Value.Ople_id)
+            End If
         Next
-        'Organisatorische eenheden toevoegen
+        VoegOpleidingenToeAanStudentInOO()
+
+        'Organisatorische eenheden toevoegen in OO zijn dit teams
+        For Each kv In Opleidingen
+            'check of team bekend is in OO : kv.Value.Teamcode
+            Dim sTeamcode As String = kv.Value.Teamcode
+            If dAlleTeams.ContainsKey(sTeamcode) Then
+                Dim t As cTeam = dAlleTeams(sTeamcode)
+                If t.OoID = -1 Then
+                    'ID in ondewijsonline is onbekend en kon niet worden aangemaakt
+                    l.LOGTHIS("Kan student niet aan team koppelen : Team bestaat niet in OO:" & sTeamcode)
+                    Return False
+                End If
+            End If
+
+        Next
+
 
 
     End Function
-    Private Function CreateOrUpdateUser(Optional bolCreate As Boolean = False) As Boolean
+    Private Function CreateOrUpdateUserNAW(Optional bolCreate As Boolean = False) As Boolean
 
         i.GetToken()    'token opvragen        '
 
@@ -255,6 +287,7 @@ Public Class cStudentBasis
         request.AddParameter("lastname_prefix", Me.Lastname_prefix)
         request.AddParameter("email", Me.WerkMailAdres)
         request.AddParameter("code", Me.StudentNummer)
+        request.AddParameter("foreign_id", Me.StudentNummer)
         client.Timeout = -1
 
         Dim response As RestSharp.RestResponse = client.Execute(request)
@@ -432,7 +465,7 @@ Public Class cStudentBasis
     Private Function GroepInOoAanmaken(sGroepscode As String) As Boolean
         'Groep aanmaken in OO, indien gelukt de gegevens opslaan in de dictionary
 
-        Dim json As JObject = i.OO_JSON_REQUEST(dURLS("TeamGet") & "?name=" & sGroepscode & "&team_type_id=1", "Groep aanmaken in OO " & sGroepscode, StudentNummer)
+        Dim json As JObject = i.OO_JSON_REQUEST(dURLS("TeamGet") & "?name=" & sGroepscode & "&team_type_id=1", "Groep aanmaken in OO " & sGroepscode, StudentNummer, RestSharp.Method.POST)
         Dim ResponseError As JValue = json.SelectToken("error")
         If CBool(ResponseError.Value) = False Then
             'geldige response
@@ -501,18 +534,7 @@ Public Class cStudentBasis
 
     End Function
 
-    Public Function BestaatOpleidingInOO(sOpleiding As String) As Boolean
-        'functie controleert of de opleiding bestaat, zo niet -> aanmaken
-        'true -> aangemaakt of bestaat al
-        'false -> bestaat niet en kon niet aangemaakt worden
 
-        'stap 1 - al eerder vandaag gecheckt? -> bestaat -> true
-        If dAlleOpleidingen.ContainsKey(sOpleiding) Then
-            If dAlleOpleidingen(sOpleiding).Ople_Id <> -1 Then
-                Return True
-            End If
-        End If
-    End Function
 
     Public Function Osiris_node() As TreeNode
         'maakt een node aan voor een treeview met studentdata
@@ -529,8 +551,15 @@ Public Class cStudentBasis
             Dim ndOpleiding As New TreeNode(kv.Value.CreboNr)
             ndOpleiding.Nodes.Add("Cohort :" & kv.Value.cohort)
             ndOpleiding.Nodes.Add("Crebo  :" & kv.Value.CreboNr)
-            'ndOpleiding.Nodes.Add("Naam   : " & kv.Value.
-            ndOpleiding.Nodes.Add("Team   : " & kv.Value.Teamcode) '& " - " & kv.Value.TeamNaam)
+            ndOpleiding.Nodes.Add("Opleiding ID: " & kv.Key & " - " & kv.Value.Ople_id)
+            Dim o As cOpleiding = dAlleOpleidingen(kv.Value.Ople_id)
+
+            ndOpleiding.Nodes.Add("Naam   : " & o.Naam)
+            ndOpleiding.Nodes.Add("Niveau : " & o.Niveau)
+            ndOpleiding.Nodes.Add("Leeweg " & o.Leerweg)
+            ndOpleiding.Nodes.Add("Bestaat in OO:" & o.BestaatinOO(kv.Value.Cohort))
+
+            ndOpleiding.Nodes.Add("Team   : " & o.TeamCode & " - " & o.Naam)
             ndOpleiding.Nodes.Add("Start  : " & kv.Value.StartDatum)
             ndOpleiding.Nodes.Add("Eind   : " & kv.Value.EindDatumWerkelijk)
             ndOpleidingen.Nodes.Add(ndOpleiding)
@@ -540,5 +569,40 @@ Public Class cStudentBasis
         ndOsiris.ExpandAll()
         Return ndOsiris
 
+    End Function
+
+    Function VoegOpleidingenToeAanStudentInOO() As Boolean
+        Dim first As Boolean = True
+        Try
+            For Each o In Me.Opleidingen
+                Dim startJaar As Integer = o.Value.Cohort
+
+                Dim oo_opleiding_id As Long = dAlleOpleidingen(o.Value.Ople_id).VersiesInOO(startJaar)
+                Dim sOOupdate As String = dURLS("Opleidingen") & "/" & oo_opleiding_id & "/users/attach?user_ids[]=" & Me.OOid
+                Dim sOOupdateFirst As String = dURLS("StudentGet") & "/" & Me.OOid & "/programs/sync?program_ids[]=" & oo_opleiding_id
+                ' https://mboutrechttest.onderwijsonline.nl/api/v1/program/3597/users/attach?user_ids[]=44736
+
+                'request aan webservice aanbieden
+                Dim jsonString As String = ""
+                If first = True Then
+                    jsonString = i.OO_JSON_REQUEST(sOOupdateFirst, "Opleiding aan student syncen", Me.StudentNummer, RestSharp.Method.POST)
+                    first = False
+                Else
+                    jsonString = i.OO_JSON_REQUEST(sOOupdate, "Opleiding aan student koppelen", Me.StudentNummer, RestSharp.Method.POST)
+                End If
+
+                Dim json As JObject = JObject.Parse(jsonString)
+                Dim ResponseError As JValue = json.SelectToken("error")
+                If CBool(ResponseError.Value) = False Then
+                    l.LOGTHIS("Student " & Me.StudentNummer & " aan opleiding gekoppeld " & dAlleOpleidingen(o.Value.Ople_id).Naam & " jaar: " & startJaar)
+                Else
+                    l.LOGTHIS("Koppelen niet gelukt")
+                End If
+            Next
+        Catch ex As Exception
+            l.LOGTHIS("Fout bij koppelen student " & Me.StudentNummer & " aan zijn opleidingen: " & ex.Message)
+            Return False
+        End Try
+        Return True
     End Function
 End Class

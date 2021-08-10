@@ -83,7 +83,8 @@ Public Class frmMain
             Catch ex As Exception
                 MsgBox("Fout bij opvragen student : " & ex.Message)
             End Try
-
+        Else
+            l.LOGTHIS("Student niet gevonden in OSIRIS")
 
         End If
 
@@ -111,11 +112,13 @@ Public Class frmMain
     End Sub
 
     Private Sub btnCheckMutaties_Click(sender As Object, e As EventArgs) Handles btnCheckMutaties.Click
+
         'controleren of er mutaties zijn die gedaan moeten worden
         If dictOsirisStudentenKeyStudentNr.ContainsKey(Me.txtStudentNummer.Text) Then
             dictOsirisStudentenKeyStudentNr.Remove(Me.txtStudentNummer.Text)
         End If
-        i.GetStudentsOsiris(Me.txtStudentNummer.Text)
+
+        i.GetStudentsOsiris(Me.txtStudentNummer.Text)       'opvragen student gegevens en toevoegen aan dictionary studenten
 
         If dictOsirisStudentenKeyStudentNr.ContainsKey(Me.txtStudentNummer.Text) Then
             Dim s As cStudentBasis = dictOsirisStudentenKeyStudentNr(Me.txtStudentNummer.Text)

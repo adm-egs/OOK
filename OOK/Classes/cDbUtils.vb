@@ -165,7 +165,7 @@ Public Class cDbUtils
                     Return rd.GetDateTime(colIndex)
                 End If
             Else
-                Return New Date(30 - 0, 1, 1)
+                Return New Date(3000, 1, 1)
             End If
         Catch ex As Exception
             Try

@@ -9,6 +9,7 @@
     Public dictOsirisStudentenKeyStudentNr As New Dictionary(Of String, cStudentBasis)
     Public dAlleGroepen As New Dictionary(Of String, cGroep)
     Public dAlleOpleidingen As New Dictionary(Of Long, cOpleiding)
+    Public dAlleTeams As New Dictionary(Of String, cTeam)
 
 
     'oude code:
