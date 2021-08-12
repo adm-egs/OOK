@@ -113,13 +113,36 @@ Public Class cStudentBasis
                     'toevoegen aan OO
                     ChangeUserInOO(True)    'create user
                 Else
+                    Try
+                        If IsDate(Me.Deleted_at) Then
+                            If Me.Deleted_at > New Date(2000, 1, 1) Then
+                                'restore user
+                                Dim sRestoreCall As String = dURLS("StudentGet") & "/" & Me.OOid & "/restore"
+                                i.OO_JSON_REQUEST(sRestoreCall, "Restore deleted student", Me.StudentNummer, RestSharp.Method.GET)
+                                l.LOGTHIS("User gerestored in OO", 20)
+                            End If
+                        End If
+                    Catch ex As Exception
+
+                    End Try
+                   
                     ChangeUserInOO(False)   'update user
 
                 End If
             Else
+                If IsDate(Me.Deleted_at) Then
+                    If Me.Deleted_at > New Date(2000, 1, 1) Then
+                        'restore user
+                        Dim sRestoreCall As String = dURLS("StudentGet") & "/" & Me.OOid & "/restore"
+                        i.OO_JSON_REQUEST(sRestoreCall, "Restore deleted student", Me.StudentNummer, RestSharp.Method.GET)
+                        l.LOGTHIS("User gerestored in OO")
+                    End If
+                End If
                 ChangeUserInOO(False)   'update user
             End If
         Else
+
+
             'bekend in OO -> updaten
             ChangeUserInOO(False)   'update user
         End If
@@ -164,6 +187,7 @@ Public Class cStudentBasis
                 BekendInOO = False
                 Return Nothing
             Else
+
                 BekendInOO = True
             End If
 
@@ -202,7 +226,7 @@ Public Class cStudentBasis
             End If
         Else
             If CreateOrUpdateUserNAW(True) = False Then
-                l.LOGTHIS("Create student niet gelukt")
+                l.LOGTHIS("Create student niet gelukt", 20)
                 Return False
             End If
         End If
@@ -212,14 +236,14 @@ Public Class cStudentBasis
         End If
         'groep student toevoegen
         If VoegPermissieGroepStudentToe() = False Then
-            l.LOGTHIS("Fout bij toevoegen permissiegroep student")
+            l.LOGTHIS("Fout bij toevoegen permissiegroep student", 20)
             Return False
         End If
 
 
         'overige klassen toevoegen
         If VoegKlassenToe() = False Then
-            l.LOGTHIS("Fout bij toevoegen klassen bij student in OO")
+            l.LOGTHIS("Fout bij toevoegen klassen bij student in OO", 20)
             Return False
         End If
 
@@ -239,7 +263,7 @@ Public Class cStudentBasis
                 End If
             Else
                 'zou niet voormogen komen
-                l.LOGTHIS("opleiding bestaat niet ID=" & kv.Value.Ople_id)
+                l.LOGTHIS("opleiding bestaat niet ID=" & kv.Value.Ople_id, 10)
             End If
         Next
         VoegOpleidingenToeAanStudentInOO()
@@ -287,51 +311,57 @@ Public Class cStudentBasis
 
     End Function
     Private Function CreateOrUpdateUserNAW(Optional bolCreate As Boolean = False) As Boolean
+        Try
 
-        i.GetToken()    'token opvragen        '
 
-        Dim client As RestSharp.RestClient '  New RestSharp.RestClient(dURLS("StudentGet"))
-        Dim request As New RestSharp.RestRequest
+            i.GetToken()    'token opvragen        '
 
-        If bolCreate = True Then
-            'persoon aanmaken
-            request.Method = RestSharp.Method.POST
-            client = New RestSharp.RestClient(dURLS("StudentGet"))
-        Else
-            'persoon updaten
-            If OOid = -1 Then Stop
-            request.Method = RestSharp.Method.PUT
-            client = New RestSharp.RestClient(dURLS("StudentGet") & "/" & OOid)
-        End If
+            Dim client As RestSharp.RestClient '  New RestSharp.RestClient(dURLS("StudentGet"))
+            Dim request As New RestSharp.RestRequest
 
-        request.AddHeader("Authorization", "Bearer " & i.AuthenticationToken)
-        request.AddParameter("username", Me.Username)
-        request.AddParameter("firstname", Me.Firstname)
-        request.AddParameter("lastname", Me.Lastname)
-        request.AddParameter("lastname_prefix", Me.Lastname_prefix)
-        request.AddParameter("email", Me.WerkMailAdres)
-        request.AddParameter("code", Me.StudentNummer)
-        request.AddParameter("foreign_id", Me.StudentNummer)
-        client.Timeout = -1
+            If bolCreate = True Then
+                'persoon aanmaken
+                request.Method = RestSharp.Method.POST
+                client = New RestSharp.RestClient(dURLS("StudentGet"))
+            Else
+                'persoon updaten
+                If OOid = -1 Then Stop
+                request.Method = RestSharp.Method.PUT
+                client = New RestSharp.RestClient(dURLS("StudentGet") & "/" & OOid)
+            End If
 
-        Dim response As RestSharp.RestResponse = client.Execute(request)
-        If bolCreate = True Then
-            Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, "Aanmaken student in OO", StudentNummer, response.Content, response.StatusCode.ToString)
-            jsonLog.Write2database()
-        Else
-            Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, "Updaten student in OO", StudentNummer, response.Content, response.StatusCode.ToString)
-            jsonLog.Write2database()
-        End If
+            request.AddHeader("Authorization", "Bearer " & i.AuthenticationToken)
+            request.AddParameter("username", Me.Username)
+            request.AddParameter("firstname", Me.Firstname)
+            request.AddParameter("lastname", Me.Lastname)
+            request.AddParameter("lastname_prefix", Me.Lastname_prefix)
+            request.AddParameter("email", Me.WerkMailAdres)
+            request.AddParameter("code", Me.StudentNummer)
+            request.AddParameter("foreign_id", Me.StudentNummer)
+            client.Timeout = -1
 
-        If response.StatusCode <> Net.HttpStatusCode.OK Then
-            l.LOGTHIS("Request failed : " & response.StatusCode)
-            l.LOGTHIS("OOid=" & Me.OOid)
+            Dim response As RestSharp.RestResponse = client.Execute(request)
+            If bolCreate = True Then
+                Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, "Aanmaken student in OO", StudentNummer, response.Content, response.StatusCode.ToString)
+                jsonLog.Write2database()
+            Else
+                Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, "Updaten student in OO", StudentNummer, response.Content, response.StatusCode.ToString)
+                jsonLog.Write2database()
+            End If
+
+            If response.StatusCode <> Net.HttpStatusCode.OK Then
+                l.LOGTHIS("Request failed : " & response.StatusCode)
+                l.LOGTHIS("OOid=" & Me.OOid)
+                Return False
+            End If
+
+            Dim json As JObject = JObject.Parse(response.Content)
+            ' Dim dataUser As JArray = json.SelectToken("error")
+            'controleren of dit gelukt is
+        Catch ex As Exception
+            l.LOGTHIS("Fout bij create / update user: " & ex.Message)
             Return False
-        End If
-
-        Dim json As JObject = JObject.Parse(response.Content)
-        ' Dim dataUser As JArray = json.SelectToken("error")
-        'controleren of dit gelukt is
+        End Try
         Return True
     End Function
 
@@ -376,14 +406,19 @@ Public Class cStudentBasis
         Dim first As Boolean = True
         For Each kv In GroepsDeelnames
             'stap 1 - controleer of de groep bestaat
-            If BestaatGroepInOO(kv.Value.GroepsCode) = True Then  'controleer of de groep bestaat true als deze bestaat of aangemaakt is
-                'groepsdeelname bij student toevoegen
-                If VoegGroepBijStudentToeInOO(kv.Value, first) = False Then
-                    Okresult = False
-                Else
-                    first = False
+            Try
+                If BestaatGroepInOO(kv.Value.GroepsCode) = True Then  'controleer of de groep bestaat true als deze bestaat of aangemaakt is
+                    'groepsdeelname bij student toevoegen
+                    If VoegGroepBijStudentToeInOO(kv.Value, first) = False Then
+                        Okresult = False
+                    Else
+                        first = False
+                    End If
                 End If
-            End If
+            Catch ex As Exception
+                l.LOGTHIS("Fout bij toevoegen groep: " & kv.Value.GroepsCode & " >> " & ex.Message, 25)
+            End Try
+
 
         Next
         Return Okresult
@@ -447,13 +482,14 @@ Public Class cStudentBasis
 
         Dim client As RestSharp.RestClient
         Dim request As New RestSharp.RestRequest
-        If OOid = -1 Then Stop
+        If OOid = -1 Then
+            l.LOGTHIS("OOid = -1")
+        End If
 
         request.Method = RestSharp.Method.GET
         client = New RestSharp.RestClient(dURLS("TeamGet") & "?name=" & sGroep)
         request.AddHeader("Authorization", "Bearer " & i.AuthenticationToken)
         client.Timeout = -1
-
         Dim response As RestSharp.RestResponse = client.Execute(request)
 
         If response.StatusCode <> Net.HttpStatusCode.OK Then
@@ -482,15 +518,16 @@ Public Class cStudentBasis
             Return cReturnGroep
 
         Else
-            Application.DoEvents()
+            l.LOGTHIS("Fout bij opvragen data uit OO")
         End If
-
+        Return Nothing
     End Function
 
     Private Function GroepInOoAanmaken(sGroepscode As String) As Boolean
         'Groep aanmaken in OO, indien gelukt de gegevens opslaan in de dictionary
 
-        Dim json As JObject = i.OO_JSON_REQUEST(dURLS("TeamGet") & "?name=" & sGroepscode & "&team_type_id=1", "Groep aanmaken in OO " & sGroepscode, StudentNummer, RestSharp.Method.POST)
+        Dim sJson As String = i.OO_JSON_REQUEST(dURLS("TeamGet") & "?name=" & sGroepscode & "&team_type_id=1", "Groep aanmaken in OO " & sGroepscode, StudentNummer, RestSharp.Method.POST)
+        Dim json As JObject = JObject.Parse(sJson)
         Dim ResponseError As JValue = json.SelectToken("error")
         If CBool(ResponseError.Value) = False Then
             'geldige response
@@ -498,7 +535,7 @@ Public Class cStudentBasis
             If IsNothing(dataValue) Then
                 Return False
             End If
-
+            l.LOGTHIS("Groep aangemaakt in OO: " & sGroepscode, 20)
             Dim sContent As String = dataValue.ToString
             Dim jsonContent As JObject = JObject.Parse(sContent)
             jsonContent.CreateReader()
@@ -534,34 +571,40 @@ Public Class cStudentBasis
         If Not dAlleGroepen.ContainsKey(Groep.GroepsCode) Then
             Return False
         End If
+        Try
 
-        i.GetToken()    'token opvragen        '
 
-        Dim sAttach As String = ""
-        If first Then
-            sAttach = "/" & OOid & "/teams/sync?team_ids[]=" & dAlleGroepen(Groep.GroepsCode).OOid
-        Else
-            sAttach = "/" & OOid & "/teams/attach?team_ids[]=" & dAlleGroepen(Groep.GroepsCode).OOid
-        End If
+            i.GetToken()    'token opvragen        '
 
-        Dim client As RestSharp.RestClient
-        Dim request As New RestSharp.RestRequest
+            Dim sAttach As String = ""
+            If first Then
+                sAttach = "/" & OOid & "/teams/sync?team_ids[]=" & dAlleGroepen(Groep.GroepsCode).OOid
+            Else
+                sAttach = "/" & OOid & "/teams/attach?team_ids[]=" & dAlleGroepen(Groep.GroepsCode).OOid
+            End If
 
-        request.Method = RestSharp.Method.POST
-        client = New RestSharp.RestClient(dURLS("StudentGet") & sAttach)
-        request.AddHeader("Authorization", "Bearer " & i.AuthenticationToken)
-        client.Timeout = -1
+            Dim client As RestSharp.RestClient
+            Dim request As New RestSharp.RestRequest
 
-        Dim response As RestSharp.RestResponse = client.Execute(request)
-        Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, "Toevoegen groep " & Groep.GroepsCode, StudentNummer, response.Content, response.StatusCode.ToString)
-        jsonLog.Write2database()
+            request.Method = RestSharp.Method.POST
+            client = New RestSharp.RestClient(dURLS("StudentGet") & sAttach)
+            request.AddHeader("Authorization", "Bearer " & i.AuthenticationToken)
+            client.Timeout = -1
 
-        If response.StatusCode <> Net.HttpStatusCode.OK Then
+            Dim response As RestSharp.RestResponse = client.Execute(request)
+            Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, "Toevoegen groep " & Groep.GroepsCode, StudentNummer, response.Content, response.StatusCode.ToString)
+            jsonLog.Write2database()
+
+            If response.StatusCode <> Net.HttpStatusCode.OK Then
+                Return False
+            End If
+
+            Dim json As JObject = JObject.Parse(response.Content)
+            Dim ResponseError As JValue = json.SelectToken("error")
+        Catch ex As Exception
+            l.LOGTHIS("Fout bij koppelen groep aan student : " & ex.Message)
             Return False
-        End If
-
-        Dim json As JObject = JObject.Parse(response.Content)
-        Dim ResponseError As JValue = json.SelectToken("error")
+        End Try
         Return True
 
     End Function
@@ -626,13 +669,13 @@ Public Class cStudentBasis
                 Dim json As JObject = JObject.Parse(jsonString)
                 Dim ResponseError As JValue = json.SelectToken("error")
                 If CBool(ResponseError.Value) = False Then
-                    l.LOGTHIS("Student " & Me.StudentNummer & " aan opleiding gekoppeld " & dAlleOpleidingen(o.Value.Ople_id).Naam & " jaar: " & startJaar)
+                    l.LOGTHIS("Student " & Me.StudentNummer & " aan opleiding gekoppeld " & dAlleOpleidingen(o.Value.Ople_id).Naam & " jaar: " & startJaar, 5)
                 Else
-                    l.LOGTHIS("Koppelen niet gelukt")
+                    l.LOGTHIS("Koppelen student aan opleidng niet gelukt", 25)
                 End If
             Next
         Catch ex As Exception
-            l.LOGTHIS("Fout bij koppelen student " & Me.StudentNummer & " aan zijn opleidingen: " & ex.Message)
+            l.LOGTHIS("Fout bij koppelen student " & Me.StudentNummer & " aan zijn opleidingen: " & ex.Message, 25)
             Return False
         End Try
         Return True

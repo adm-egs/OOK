@@ -63,12 +63,12 @@ Public Class cDbUtils
             Try
                 conOra.ConnectionString = oraConString
                 conOra.Open()
-                l.LOGTHIS("Verbinding met Oracle server geopend")
+                l.LOGTHIS("Verbinding met Oracle server geopend", 10)
             Catch ex As Exception
                 Debug.Print(ex.Message)
                 Debug.Print(oraConString)
 
-                l.LOGTHIS("Kan de Oracle database niet openen")
+                l.LOGTHIS("Kan de Oracle database niet openen", 25)
                 If l.UitgebreideLogging Then
                     l.LOGTHIS(oraConString)
                 End If
@@ -98,8 +98,8 @@ Public Class cDbUtils
 
             Catch ex As Exception
                 If l.UitgebreideLogging Then
-                    l.LOGTHIS("Fout bij query uitvoeren : " & ex.Message)
-                    l.LOGTHIS(sql)
+                    l.LOGTHIS("Fout bij query uitvoeren : " & ex.Message, 25)
+                    l.LOGTHIS(sql, 25)
                 End If
 
                 Return Nothing
@@ -141,7 +141,7 @@ Public Class cDbUtils
                         Dim sValue As System.Int32 = rd.GetInt32(colindex)
                         Return CStr(sValue)
                     Case Else
-                        l.LOGTHIS("Fout bij opvragen waarden van het type " & sType)
+                        l.LOGTHIS("Fout bij opvragen waarden van het type " & sType, 25)
                         Return String.Empty
                 End Select
             End Try
@@ -219,8 +219,8 @@ Public Class cDbUtils
                 conSQL.Open()
                 l.LOGTHIS("Verbinding met SQL server geopend")
             Catch ex As Exception
-                l.LOGTHIS("Kan de database niet openen")
-                l.LOGTHIS(sqlConstring)
+                l.LOGTHIS("Kan de database niet openen", 25)
+                l.LOGTHIS(sqlConstring, 25)
                 Throw New Exception("Kan de database niet openen")
                 Return False
             End Try
@@ -243,8 +243,8 @@ Public Class cDbUtils
 
             Catch ex As Exception
                 If l.UitgebreideLogging Then
-                    l.LOGTHIS("Fout bij query uitvoeren : " & ex.Message)
-                    l.LOGTHIS(sql)
+                    l.LOGTHIS("Fout bij query uitvoeren : " & ex.Message, 25)
+                    l.LOGTHIS(sql, 25)
                 End If
 
                 Return Nothing

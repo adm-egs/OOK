@@ -25,6 +25,13 @@ Public Class cInstellingen
     Private _CheckenOpUnderscoreGroepen As Boolean = False
     Private _SqlOpleidingenOpvragen As String = ""
     Private _SqlTeamsOpvragen As String = ""
+    Private _lastMutatieDatumCheckedStudent As Date
+    Private _lastMutatieDatumCheckedGroep As Date
+    Private _lastMutatieDatumCheckedOpleiding As Date
+    Private _sqlStudentMutaties As String = ""
+    Private _sqlGroepMutaties As String = ""
+    Private _sqlOpleidingMutaties As String = ""
+
 
 
     Public Property GrantType As String
@@ -217,6 +224,66 @@ Public Class cInstellingen
         End Set
     End Property
 
+    Public Property LastMutatieDatumCheckedStudent As Date
+        Get
+            Return _lastMutatieDatumCheckedStudent
+        End Get
+        Set(value As Date)
+            _lastMutatieDatumCheckedStudent = value
+        End Set
+    End Property
+
+    Public Property SqlStudentMutaties(datum As Date) As String
+        Get
+            Dim sHelp As String = _sqlStudentMutaties
+            sHelp = Strings.Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:ss"))
+            Return sHelp
+        End Get
+        Set(value As String)
+            _sqlStudentMutaties = value
+        End Set
+    End Property
+
+    Public Property LastMutatieDatumCheckedGroep As Date
+        Get
+            Return _lastMutatieDatumCheckedGroep
+        End Get
+        Set(value As Date)
+            _lastMutatieDatumCheckedGroep = value
+        End Set
+    End Property
+
+    Public Property LastMutatieDatumCheckedOpleiding As Date
+        Get
+            Return _lastMutatieDatumCheckedOpleiding
+        End Get
+        Set(value As Date)
+            _lastMutatieDatumCheckedOpleiding = value
+        End Set
+    End Property
+
+    Public Property SqlGroepMutaties(datum As Date) As String
+        Get
+            Dim sHelp As String = _sqlGroepMutaties
+            sHelp = Strings.Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:ss"))
+            Return sHelp
+        End Get
+        Set(value As String)
+            _sqlGroepMutaties = value
+        End Set
+    End Property
+
+    Public Property SqlOpleidingMutaties(datum As Date) As String
+        Get
+            Dim sHelp As String = _sqlOpleidingMutaties
+            sHelp = Strings.Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:ss"))
+            Return sHelp
+        End Get
+        Set(value As String)
+            _sqlOpleidingMutaties = value
+        End Set
+    End Property
+
     Public Sub New()
 
         Try
@@ -250,11 +317,29 @@ Public Class cInstellingen
         End Try
 
         Try
+            _sqlStudentMutaties = getQuery("osiris\06_StudentMutaties.txt")
+        Catch ex As Exception
+            Throw New Exception("Kan query studentmutaties niet inlezen")
+        End Try
+
+        Try
+            _sqlGroepMutaties = getQuery("osiris\07_groepsmutaties.txt")
+        Catch ex As Exception
+            Throw New Exception("Kan query groepsmutaties niet inlezen")
+        End Try
+
+        Try
+            _sqlOpleidingMutaties = getQuery("osiris\08_opleidingsMutaties")
+        Catch ex As Exception
+            Throw New Exception("Kan query opleidingsmutaties niet inlezen")
+        End Try
+
+        Try
             Me.CheckenOpUnderscoreGroepen = ini.GetBoolean("Algemeen", "CheckOpUnderscoreInGroepCode", False)
         Catch ex As Exception
             Throw New Exception("Kan waarde van checken op underscore groepen niet opvragen: " & ex.Message)
         End Try
-
+        Me.LastMutatieDatumCheckedStudent = LastMutatieDatumCheckedStudent
 
     End Sub
     Public Function GetToken() As Boolean
@@ -285,8 +370,8 @@ Public Class cInstellingen
             Dim expires_in As String = json.SelectToken("expires_in", False).Value(Of String)
 
             AuthenticationToken = json.SelectToken("access_token", False).Value(Of String)
-            If l.UitgebreideLogging Then l.LOGTHIS("Authentication token : " & AuthenticationToken)
-            If l.UitgebreideLogging Then l.LOGTHIS("Expires in : " & i.AuthenticationTokenGeldigHeid)
+            '  If l.UitgebreideLogging Then l.LOGTHIS("Authentication token : " & AuthenticationToken)
+            '  If l.UitgebreideLogging Then l.LOGTHIS("Expires in : " & i.AuthenticationTokenGeldigHeid)
 
             Me.Tokengeldigheid = CLng(expires_in)
             If l.UitgebreideLogging Then l.LOGTHIS("Authenticatie token opgevraagd")
@@ -681,29 +766,139 @@ Public Class cInstellingen
 
     Public Function CheckOsirisVoorMutaties()
         'functie controleert diverse tabellen op relevante mutatis
-        'ost_student - STUDENT
-        'OST 
-    End Function
+        'ost_student - STUDENT - NAW    //select distinct mutatiedatum from ost_student;
+        'OST_groep //ost_sgroep_student
+        ';    //ost_student_ook
+        'opvragen last check datum / tijd
 
+        Dim sStudentNummer As String = ""
+        Dim mutatieDatum As Date
+        Dim dCheck As Date
+
+        'Dim sDate As String = ini.GetString("Check", "last_check_student", "")
+        'If sDate = "" Then
+        '    dCheck = Now.Date()
+        'Else
+        '    'format er uit halen is YYYY-MM-DD HH24:MI
+        '    Dim jaar As Integer = CInt(Left(sDate, 4))
+        '    Dim maand As Integer = CInt(Mid(sDate, 6, 2))
+        '    Dim dag As Integer = CInt(Mid(sDate, 9, 2))
+        '    Dim UUr As Integer = CInt(Mid(sDate, 12, 2))
+        '    Dim minuut As Integer = CInt(Mid(sDate, 15, 2))
+        '    dCheck = New Date(jaar, maand, dag, UUr, minuut, 0)
+        'End If
+        dCheck = Last_check_Date("last_check_student")
+        Dim sStudentCheck As String = SqlStudentMutaties(dCheck)
+
+
+        'doe check
+
+
+        Dim EersteMutatieDatumStudent As Date = New Date(2099, 8, 1)
+        'studentmutaties verwerken
+        Try
+            Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(sStudentCheck)
+            If Not IsNothing(rd) Then
+                If rd.HasRows Then
+                    While rd.Read
+                        sStudentNummer = dbOsiris.oraSafeGetDecimal(rd, "studentnummer")
+                        mutatieDatum = dbOsiris.oraGetSafeDate(rd, "mutatie_datum")
+                        If mutatieDatum < EersteMutatieDatumStudent Then
+                            EersteMutatieDatumStudent = mutatieDatum   'opslaan wat de eerste mutatiedatum is voor toekomstige mutaties
+                        End If
+
+                        GetStudentsOsiris(sStudentNummer)
+                        dictOsirisStudentenKeyStudentNr(sStudentNummer).ChangeUserInOO()
+                        l.LOGTHIS("Studentmutatie verwerkt: " & sStudentNummer, 10)
+                    End While
+                End If
+            End If
+        Catch ex As Exception
+            l.LOGTHIS("Fout bij verwerken studentmutatie: " & ex.Message)
+        End Try
+
+        'groepsmutaties verwerken
+        Dim EersteMutatieDatumGroep As Date = New Date(2099, 8, 1)
+        Try
+            Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(sStudentCheck)
+            If Not IsNothing(rd) Then
+                If rd.HasRows Then
+                    While rd.Read
+                        sStudentNummer = dbOsiris.oraSafeGetDecimal(rd, "studentnummer")
+                        mutatieDatum = dbOsiris.oraGetSafeDate(rd, "mutatie_datum")
+                        If mutatieDatum < EersteMutatieDatumGroep Then
+                            EersteMutatieDatumGroep = mutatieDatum   'opslaan wat de eerste mutatiedatum is voor toekomstige mutaties
+                        End If
+
+                        GetStudentsOsiris(sStudentNummer)
+                        dictOsirisStudentenKeyStudentNr(sStudentNummer).ChangeUserInOO()
+                        l.LOGTHIS("Groepsmutatie verwerkt: " & sStudentNummer, 10)
+                    End While
+                End If
+            End If
+        Catch ex As Exception
+            l.LOGTHIS("Fout bij verwerken studentmutatie: " & ex.Message)
+        End Try
+
+
+        'opleidingsmutaties verwerken
+
+
+        i.LastMutatieDatumCheckedStudent = EersteMutatieDatumStudent
+        i.LastMutatieDatumCheckedGroep = EersteMutatieDatumGroep
+
+        'tijd wegschrijven
+        ini.WriteString("Check", "last_check_student", LastMutatieDatumCheckedStudent.ToString("yyyy-MM-dd HH:ss"))
+
+
+
+    End Function
+    Private Function Last_check_Date(sItem As String) As Date
+        'functie haalt datum uit ini file met vast format yyyy-mm-dd HH24:MI
+        'geeft huidige datum als deze niet aanwezig is
+
+        Dim dCheck As Date
+        Dim sDate As String = ini.GetString("Check", sItem, "")
+
+        If sDate = "" Then
+            dCheck = Now.Date()
+        Else
+            'format er uit halen is YYYY-MM-DD HH24:MI
+            Dim jaar As Integer = CInt(Left(sDate, 4))
+            Dim maand As Integer = CInt(Mid(sDate, 6, 2))
+            Dim dag As Integer = CInt(Mid(sDate, 9, 2))
+            Dim UUr As Integer = CInt(Mid(sDate, 12, 2))
+            Dim minuut As Integer = CInt(Mid(sDate, 15, 2))
+            dCheck = New Date(jaar, maand, dag, UUr, minuut, 0)
+        End If
+        Return dCheck
+    End Function
     Public Function OO_JSON_REQUEST(urlRequest As String, sOmschrijving As String, sStudentNummer As String, methode As RestSharp.Method) As String
         'standaard deel van een request 
-        i.GetToken()    'token opvragen        '
-        Dim client As RestSharp.RestClient
-        Dim request As New RestSharp.RestRequest
+        Try
 
-        request.Method = methode
-        client = New RestSharp.RestClient(urlRequest)
-        request.AddHeader("Authorization", "Bearer " & i.AuthenticationToken)
-        client.Timeout = -1
+            i.GetToken()    'token opvragen        '
+            Dim client As RestSharp.RestClient
+            Dim request As New RestSharp.RestRequest
 
-        Dim response As RestSharp.RestResponse = client.Execute(request)
-        If response.StatusCode <> Net.HttpStatusCode.OK Then
-            Return False
-        End If
+            request.Method = methode
+            client = New RestSharp.RestClient(urlRequest)
+            request.AddHeader("Authorization", "Bearer " & i.AuthenticationToken)
+            client.Timeout = -1
 
-        Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, sOmschrijving, sStudentNummer, response.Content, response.StatusCode.ToString)
-        jsonLog.Write2database()
-        Return response.Content
+            Dim response As RestSharp.RestResponse = client.Execute(request)
+            If response.StatusCode <> Net.HttpStatusCode.OK Then
+                Return False
+            End If
+
+            Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, sOmschrijving, sStudentNummer, response.Content, response.StatusCode.ToString)
+            jsonLog.Write2database()
+            Return response.Content
+        Catch ex As Exception
+            l.LOGTHIS("Fout bij uitvoeren call naar webservice : " & ex.Message)
+            If l.UitgebreideLogging Then l.LOGTHIS(urlRequest)
+            Return Nothing
+        End Try
 
     End Function
 

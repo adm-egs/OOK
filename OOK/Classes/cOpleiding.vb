@@ -231,7 +231,7 @@ Public Class cOpleiding
 
         Dim sAanmaken As String = "?name=" & Me.Naam & " (OSIRIS)" & "&code=" & Me.OO_Code & "&year=" & sJaar & "&foreign_id=" & sJaar & Ople_Id
 
-        Dim sJson As String = i.OO_JSON_REQUEST(dURLS("Opleidingen") & sAanmaken, "opleiding aanmaken in OO " & Me.Naam, OO_Code, RestSharp.Method.POST)
+        Dim sJson As String = i.OO_JSON_REQUEST(dURLS("Opleidingen") & sAanmaken, "opleiding aanmaken in OO " & Me.Naam, -1, RestSharp.Method.POST)
         Dim json As JObject = JObject.Parse(sJson)
         Dim ResponseError As JValue = json.SelectToken("error")
         If CBool(ResponseError.Value) = False Then

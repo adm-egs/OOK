@@ -31,10 +31,18 @@ Public Class frmMain
         dbOsiris.oraConString = "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.69.31)(PORT=1523))(CONNECT_DATA=(SERVICE_NAME=utrtsts)));User Id=MBOUMW21;Password=Appelmoes_Zwemmen_93355;"
         dbMiddleWare.sqlConstring = "Provider=MSOLEDBSQL;Server=SQL803354-PRD;Database=Koppel;UID=ook_user_middleware;PWD=v@!SExwku5BTOa%tWq!3"
         Me.txtStudentNummer.Text = ini.GetString("algemeen", "laststudent", "")
+        Me.txtTriggerNiveau.Text = ini.GetString("algemeen", "triggerniveau", "1")
         If i.LoadDefaults = False Then
-            l.LOGTHIS("Opvragen instellingen niet gelukt")
+            l.LOGTHIS("Opvragen instellingen niet gelukt", 25)
             End
         End If
+        Dim sLoggingState As String = ini.GetString("algemeen", "uitgbreidelogging", "Nee")
+        If sLoggingState = "Ja" Then
+            Me.chkUitgebreideLogging.Checked = True
+        Else
+            Me.chkUitgebreideLogging.Checked = False
+        End If
+
     End Sub
 
     Private Sub TabControl1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TabControl1.SelectedIndexChanged
@@ -42,7 +50,7 @@ Public Class frmMain
     End Sub
 
     Private Sub btnGetToken_Click(sender As Object, e As EventArgs) Handles btnGetToken.Click
-        l.LOGTHIS(i.GetToken)
+        l.LOGTHIS(i.GetToken, 10)
     End Sub
 
     Private Sub btnOpvragenStudenten_Click(sender As Object, e As EventArgs) Handles btnOpvragenStudenten.Click
@@ -51,7 +59,7 @@ Public Class frmMain
 
     Private Sub btnOsirisStudentenOpvragen_Click(sender As Object, e As EventArgs) Handles btnOsirisStudentenOpvragen.Click
         i.GetStudentsOsiris()
-        l.LOGTHIS(dictOsirisStudentenKeyStudentNr.Count & " studenten ingeladen")
+        l.LOGTHIS(dictOsirisStudentenKeyStudentNr.Count & " studenten ingeladen", 10)
         Dim count As Long = 0
         For Each student In dictOsirisStudentenKeyStudentNr
             Debug.Print(student.Value.StudentNummer & ";" & student.Value.VolledigeNaam)
@@ -80,17 +88,17 @@ Public Class frmMain
                     student = dictOsirisStudentenKeyStudentNr(Me.txtStudentNummer.Text)         'Ja
                     Try
                         If student.Send2OO() = False Then                           'versturen naar OO
-                            l.LOGTHIS("Student niet naar OO gestuurd")
+                            l.LOGTHIS("Student niet naar OO gestuurd", 25)
                         End If
                     Catch ex2 As Exception
-                        l.LOGTHIS("Fout bij verzenden student naar OO:" & ex2.Message)
+                        l.LOGTHIS("Fout bij verzenden student naar OO:" & ex2.Message, 25)
                     End Try
                 End If
             Catch ex As Exception
-                MsgBox("Fout bij opvragen student : " & ex.Message)
+                l.LOGTHIS("Fout bij opvragen student : " & ex.Message, 25)
             End Try
         Else
-            l.LOGTHIS("Student niet gevonden in OSIRIS")
+            l.LOGTHIS("Student niet gevonden in OSIRIS", 10)
 
         End If
 
@@ -102,19 +110,21 @@ Public Class frmMain
     End Sub
 
     Private Sub btnDatabaseLogin_Click(sender As Object, e As EventArgs) Handles btnDatabaseLogin.Click
+
         Dim sQuery As String = "select * from koppel.db_oo.mutatielog"
 
         Dim rd As OleDbDataReader = dbMiddleWare.sqlQueryUitvoeren(sQuery)
         If rd.HasRows = False Then
             rd.Close()
-            l.LOGTHIS("geen mutaties gevonden")
+            l.LOGTHIS("geen mutaties gevonden", 10)
             Exit Sub
         End If
         Dim count As Long = 0
         While rd.Read
             count += 1
         End While
-        l.LOGTHIS(count & " mutaties gevonden")
+        l.LOGTHIS(count & " mutaties gevonden", 10)
+
     End Sub
 
     Private Sub btnCheckMutaties_Click(sender As Object, e As EventArgs) Handles btnCheckMutaties.Click
@@ -133,6 +143,71 @@ Public Class frmMain
             MsgBox("Student niet gevonden")
         End If
 
+
+    End Sub
+
+    Private Sub btnCheckBeschikbareMutatiesOsiris_Click(sender As Object, e As EventArgs) Handles btnCheckBeschikbareMutatiesOsiris.Click
+        i.CheckOsirisVoorMutaties()
+    End Sub
+
+    Private Sub chkUitgebreideLogging_CheckedChanged(sender As Object, e As EventArgs) Handles chkUitgebreideLogging.CheckedChanged
+        l.UitgebreideLogging = Me.chkUitgebreideLogging.Checked
+        If l.UitgebreideLogging = True Then
+            ini.WriteString("algemeen", "uitgbreidelogging", "Ja")
+        Else
+            ini.WriteString("algemeen", "uitgbreidelogging", "Nee")
+        End If
+
+    End Sub
+
+    Private Sub chkUitgebreideLogging_Validated(sender As Object, e As EventArgs) Handles chkUitgebreideLogging.Validated
+
+    End Sub
+
+    Private Sub btnSyncOsiris2OO_Click(sender As Object, e As EventArgs) Handles btnSyncOsiris2OO.Click
+        'vullen lijst met studenten
+        i.GetStudentsOsiris()
+        l.LOGTHIS("Alle studenten checken : " & dictOsirisStudentenKeyStudentNr.Count, 25)
+        Dim iniCheck As New cIniFile(Application.StartupPath & "\checklist-" & Now.Date.ToShortDateString & ".ini")
+
+        For Each student In dictOsirisStudentenKeyStudentNr
+            Try
+                If Me.chkStudentenVandaagGechecktOverslaan.Checked = True Then
+                    If iniCheck.GetString("studenten", student.Value.StudentNummer, "") = "checked" Then
+                        GoTo next_rec
+                    End If
+                End If
+
+
+
+                If student.Value.Send2OO() = False Then                           'versturen naar OO
+                    l.LOGTHIS("Student niet naar OO gestuurd", 25)
+                    iniCheck.WriteString("studenten", student.Value.StudentNummer, "not checked")
+                Else
+                    l.LOGTHIS("Checked " & student.Value.StudentNummer & ";" & student.Value.VolledigeNaam, 20)
+                    iniCheck.WriteString("studenten", student.Value.StudentNummer, "checked")
+                End If
+
+            Catch ex2 As Exception
+                l.LOGTHIS("Fout bij verzenden student naar OO:" & ex2.Message, 25)
+            End Try
+next_rec:
+        Next
+    End Sub
+
+    Private Sub txtTriggerNiveau_TextChanged(sender As Object, e As EventArgs) Handles txtTriggerNiveau.TextChanged
+        ini.WriteString("Algemeen", "triggerniveau", txtTriggerNiveau.Text)
+        Try
+            l.LogLevelTrigger = CInt(Me.txtTriggerNiveau.Text)
+        Catch ex As Exception
+            l.LogLevelTrigger = 0
+
+        End Try
+
+
+    End Sub
+
+    Private Sub chkStudentenVandaagGechecktOverslaan_CheckedChanged(sender As Object, e As EventArgs) Handles chkStudentenVandaagGechecktOverslaan.CheckedChanged
 
     End Sub
 End Class

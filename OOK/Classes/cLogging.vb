@@ -11,6 +11,7 @@ Public Class cLogging
     Private _bolTextboxAanwezig As Boolean = False
     Private _frm As frmMain
     Private _UitgebreideLogging As Boolean = False
+    Private _logLevelTrigger As Integer = 1
 
 
 
@@ -113,9 +114,21 @@ Public Class cLogging
         End Set
     End Property
 
+    Public Property LogLevelTrigger As Integer
+        Get
+            Return _logLevelTrigger
+        End Get
+        Set(value As Integer)
+            _logLevelTrigger = value
+        End Set
+    End Property
+
     Sub LOGTHIS(ByRef strTekst As String, Optional ByVal level As Integer = 1)
         'opgegeven tekst loggen
         Try
+            If level < LogLevelTrigger Then
+                Exit Sub
+            End If
 
             Dim GeefGebruikersNaam As String
             Dim strLogTekst As String
