@@ -233,6 +233,13 @@ Public Class cInstellingen
             _lastMutatieDatumCheckedStudent = value
         End Set
     End Property
+    Public ReadOnly Property SqlCountStudentMutaties(datum As Date)
+        Get
+            Dim sHulp As String = SqlStudentMutaties(datum)
+            sHulp = Replace(sHulp, "distinct  s.studentnummer, s.mutatie_datum", "count (s.studentnummer) as aantal")
+            Return sHulp
+        End Get
+    End Property
 
     Public Property SqlStudentMutaties(datum As Date) As String
         Get
@@ -803,6 +810,12 @@ Public Class cInstellingen
             Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlStudentMutaties(Last_check_Date("last_check_student")))
             If Not IsNothing(rd) Then
                 If rd.HasRows Then
+                    'aantal rows opvragen
+                    Dim rdCount As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlCountStudentMutaties(Last_check_Date("last_check_student")))
+                    Dim max As Long = dbOsiris.oraSafeGetDecimal(rd, "aantal")
+                    Dim Counter As Long = 0
+                    frmMain.pbMutaties.Maximum = max
+                    frmMain.pbMutaties.Value = Counter
 
                     While rd.Read
                         If i.Stoppen = True Then Exit Function
@@ -815,6 +828,9 @@ Public Class cInstellingen
                         GetStudentsOsiris(sStudentNummer)
                         dictOsirisStudentenKeyStudentNr(sStudentNummer).ChangeUserInOO()
                         l.LOGTHIS("Studentmutatie verwerkt: " & sStudentNummer, 10)
+                        Counter += 1
+                        frmMain.pbMutaties.Value = Counter
+
                     End While
                 End If
             End If
@@ -877,7 +893,8 @@ Public Class cInstellingen
         'verwerken mutaties die in de middleware staan (geplande groepsdeelnames en geplande opleidingen)
         'opvragen mutaties 
         frmMain.tsCurrentState.Text = "Geplande mutaties checken"
-        If i.Stoppen = False Then GeplandeMutatiesControleren()
+
+        GeplandeMutatiesControleren()
 
 
 

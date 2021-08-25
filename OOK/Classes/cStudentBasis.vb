@@ -235,7 +235,7 @@ Public Class cStudentBasis
             End If
         End If
 
-        If i.Stoppen = True Then Exit Function
+        'If i.Stoppen = True Then Exit Function
 
         If OOid = -1 Then
             GetStudentUitOoOpBasisVanStudentNummer()
@@ -246,7 +246,7 @@ Public Class cStudentBasis
             Return False
         End If
 
-        If i.Stoppen = True Then Exit Function
+        'If i.Stoppen = True Then Exit Function
 
         'overige klassen toevoegen
         If VoegKlassenToe() = False Then
@@ -258,7 +258,7 @@ Public Class cStudentBasis
         '2do zit nog niet goed in elkaar, werkt wel
         'student aan opleiding koppelen
         For Each kv In Opleidingen
-            If i.Stoppen = True Then Exit Function
+            'If i.Stoppen = True Then Exit Function
             'check of de opleiding bestaat
             If dAlleOpleidingen.ContainsKey(kv.Value.Ople_id) Then
                 'controleren of deze jaarversie ook bestaat
@@ -274,13 +274,13 @@ Public Class cStudentBasis
                 l.LOGTHIS("opleiding bestaat niet ID=" & kv.Value.Ople_id, 10)
             End If
         Next
-        If i.Stoppen = False Then VoegOpleidingenToeAanStudentInOO()
+        VoegOpleidingenToeAanStudentInOO()
 
         'Organisatorische eenheden toevoegen in OO zijn dit teams
         Dim first As Boolean = False    'sync is al gedaan bij groepen
         For Each kv In Opleidingen
             'check of team bekend is in OO : kv.Value.Teamcode
-            If i.Stoppen = True Then Exit Function
+            'If i.Stoppen = True Then Exit Function
             Dim sTeamcode As String = kv.Value.Teamcode
             If dAlleTeams.ContainsKey(sTeamcode) Then
                 Dim t As cTeam = dAlleTeams(sTeamcode)

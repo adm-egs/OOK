@@ -64,6 +64,8 @@ Partial Class frmMain
         Me.timTimerCheck = New System.Windows.Forms.Timer(Me.components)
         Me.chkAutomatischChecken = New System.Windows.Forms.CheckBox()
         Me.timStoppen = New System.Windows.Forms.Timer(Me.components)
+        Me.pbMutaties = New System.Windows.Forms.ToolStripProgressBar()
+        Me.ToolStripStatusLabel1 = New System.Windows.Forms.ToolStripStatusLabel()
         Me.TabControl1.SuspendLayout()
         Me.TabPage1.SuspendLayout()
         Me.TabPage2.SuspendLayout()
@@ -332,10 +334,10 @@ Partial Class frmMain
         '
         'frmMainStatusStrip
         '
-        Me.frmMainStatusStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tsConnectieOsiris, Me.tsConnectieMiddleware, Me.tsStudentNummer, Me.tsCurrentState, Me.tsLastCheckTime, Me.tsAliveTime})
+        Me.frmMainStatusStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tsConnectieOsiris, Me.tsConnectieMiddleware, Me.tsStudentNummer, Me.tsCurrentState, Me.tsLastCheckTime, Me.tsAliveTime, Me.ToolStripStatusLabel1, Me.pbMutaties})
         Me.frmMainStatusStrip.Location = New System.Drawing.Point(0, 428)
         Me.frmMainStatusStrip.Name = "frmMainStatusStrip"
-        Me.frmMainStatusStrip.Size = New System.Drawing.Size(800, 22)
+        Me.frmMainStatusStrip.Size = New System.Drawing.Size(842, 22)
         Me.frmMainStatusStrip.TabIndex = 1
         '
         'tsConnectieOsiris
@@ -443,11 +445,22 @@ Partial Class frmMain
         'timStoppen
         '
         '
+        'pbMutaties
+        '
+        Me.pbMutaties.Name = "pbMutaties"
+        Me.pbMutaties.Size = New System.Drawing.Size(100, 16)
+        '
+        'ToolStripStatusLabel1
+        '
+        Me.ToolStripStatusLabel1.Name = "ToolStripStatusLabel1"
+        Me.ToolStripStatusLabel1.Size = New System.Drawing.Size(74, 17)
+        Me.ToolStripStatusLabel1.Text = "Mutaties2Do"
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(800, 450)
+        Me.ClientSize = New System.Drawing.Size(842, 450)
         Me.Controls.Add(Me.chkAutomatischChecken)
         Me.Controls.Add(Me.Label9)
         Me.Controls.Add(Me.txtTriggerNiveau)
@@ -516,4 +529,6 @@ Partial Class frmMain
     Friend WithEvents btnInlogOsiris As Button
     Friend WithEvents timStoppen As Timer
     Friend WithEvents tsAliveTime As ToolStripStatusLabel
+    Friend WithEvents ToolStripStatusLabel1 As ToolStripStatusLabel
+    Friend WithEvents pbMutaties As ToolStripProgressBar
 End Class
