@@ -108,6 +108,7 @@ Public Class cStudentBasis
         'stap 1 controleren of het OO id bekend is
         If OOid = -1 Then
             'niet bekend -> opvragen uit Onderwijs Online
+
             If GetStudentUitOoOpBasisVanStudentNummer() = False Then
                 If BekendInOO = False Then
                     'toevoegen aan OO
@@ -219,6 +220,9 @@ Public Class cStudentBasis
 
     Public Function ChangeUserInOO(Optional bolCreate As Boolean = False) As Boolean
         'functie maakt de user aan in OO of update
+        frmMain.tsStudentNummer.Text = "Student: " & Me.StudentNummer
+        Application.DoEvents()
+
         If BekendInOO = True Then
             If CreateOrUpdateUserNAW(False) = False Then
                 l.LOGTHIS("Update student niet gelukt")
@@ -231,6 +235,8 @@ Public Class cStudentBasis
             End If
         End If
 
+        If i.Stoppen = True Then Exit Function
+
         If OOid = -1 Then
             GetStudentUitOoOpBasisVanStudentNummer()
         End If
@@ -240,6 +246,7 @@ Public Class cStudentBasis
             Return False
         End If
 
+        If i.Stoppen = True Then Exit Function
 
         'overige klassen toevoegen
         If VoegKlassenToe() = False Then
@@ -251,6 +258,7 @@ Public Class cStudentBasis
         '2do zit nog niet goed in elkaar, werkt wel
         'student aan opleiding koppelen
         For Each kv In Opleidingen
+            If i.Stoppen = True Then Exit Function
             'check of de opleiding bestaat
             If dAlleOpleidingen.ContainsKey(kv.Value.Ople_id) Then
                 'controleren of deze jaarversie ook bestaat
@@ -266,12 +274,13 @@ Public Class cStudentBasis
                 l.LOGTHIS("opleiding bestaat niet ID=" & kv.Value.Ople_id, 10)
             End If
         Next
-        VoegOpleidingenToeAanStudentInOO()
+        If i.Stoppen = False Then VoegOpleidingenToeAanStudentInOO()
 
         'Organisatorische eenheden toevoegen in OO zijn dit teams
         Dim first As Boolean = False    'sync is al gedaan bij groepen
         For Each kv In Opleidingen
             'check of team bekend is in OO : kv.Value.Teamcode
+            If i.Stoppen = True Then Exit Function
             Dim sTeamcode As String = kv.Value.Teamcode
             If dAlleTeams.ContainsKey(sTeamcode) Then
                 Dim t As cTeam = dAlleTeams(sTeamcode)
@@ -563,19 +572,18 @@ Public Class cStudentBasis
         l.LOGTHIS("Student koppelen aan groep : " & Me.StudentNummer & " groep:" & Groep.GroepsCode)
 
         If Groep.IngangsDatum > Now() Then
-            '2do groep in mutatietabel zetten voor latere verwerking
+            'deelname groep in mutatietabel zetten voor latere verwerking
             Return Groep.WriteMe2MutatieLog(StudentNummer)  'start en einde naar database schrijven voor latere verwerking
             Return True
         End If
 
+
         If Not dAlleGroepen.ContainsKey(Groep.GroepsCode) Then
             Return False
         End If
+
         Try
-
-
             i.GetToken()    'token opvragen        '
-
             Dim sAttach As String = ""
             If first Then
                 sAttach = "/" & OOid & "/teams/sync?team_ids[]=" & dAlleGroepen(Groep.GroepsCode).OOid
@@ -609,8 +617,6 @@ Public Class cStudentBasis
 
     End Function
 
-
-
     Public Function Osiris_node() As TreeNode
         'maakt een node aan voor een treeview met studentdata
         Dim ndHoofd As New TreeNode(Me.StudentNummer)
@@ -624,7 +630,7 @@ Public Class cStudentBasis
         Next
         For Each kv In Me.Opleidingen
             Dim ndOpleiding As New TreeNode(kv.Value.CreboNr)
-            ndOpleiding.Nodes.Add("Cohort :" & kv.Value.cohort)
+            ndOpleiding.Nodes.Add("Cohort :" & kv.Value.Cohort)
             ndOpleiding.Nodes.Add("Crebo  :" & kv.Value.CreboNr)
             ndOpleiding.Nodes.Add("Opleiding ID: " & kv.Key & " - " & kv.Value.Ople_id)
             Dim o As cOpleiding = dAlleOpleidingen(kv.Value.Ople_id)

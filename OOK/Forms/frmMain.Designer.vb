@@ -22,8 +22,13 @@ Partial Class frmMain
     'Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Me.components = New System.ComponentModel.Container()
         Me.TabControl1 = New System.Windows.Forms.TabControl()
         Me.TabPage1 = New System.Windows.Forms.TabPage()
+        Me.Label11 = New System.Windows.Forms.Label()
+        Me.btnInlogOsiris = New System.Windows.Forms.Button()
+        Me.Label10 = New System.Windows.Forms.Label()
+        Me.btnInlogGegevensOpgeven = New System.Windows.Forms.Button()
         Me.btnDatabaseLogin = New System.Windows.Forms.Button()
         Me.Label3 = New System.Windows.Forms.Label()
         Me.btnOsirisStudentenOpvragen = New System.Windows.Forms.Button()
@@ -45,15 +50,25 @@ Partial Class frmMain
         Me.txtStudentNummer = New System.Windows.Forms.TextBox()
         Me.txtLog = New System.Windows.Forms.TextBox()
         Me.frmMainStatusStrip = New System.Windows.Forms.StatusStrip()
+        Me.tsConnectieOsiris = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.tsConnectieMiddleware = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.tsStudentNummer = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.tsCurrentState = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.tsLastCheckTime = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.tsAliveTime = New System.Windows.Forms.ToolStripStatusLabel()
         Me.btnCheckBeschikbareMutatiesOsiris = New System.Windows.Forms.Button()
         Me.Label7 = New System.Windows.Forms.Label()
         Me.chkUitgebreideLogging = New System.Windows.Forms.CheckBox()
         Me.txtTriggerNiveau = New System.Windows.Forms.TextBox()
         Me.Label9 = New System.Windows.Forms.Label()
+        Me.timTimerCheck = New System.Windows.Forms.Timer(Me.components)
+        Me.chkAutomatischChecken = New System.Windows.Forms.CheckBox()
+        Me.timStoppen = New System.Windows.Forms.Timer(Me.components)
         Me.TabControl1.SuspendLayout()
         Me.TabPage1.SuspendLayout()
         Me.TabPage2.SuspendLayout()
         Me.TabPage3.SuspendLayout()
+        Me.frmMainStatusStrip.SuspendLayout()
         Me.SuspendLayout()
         '
         'TabControl1
@@ -69,6 +84,10 @@ Partial Class frmMain
         '
         'TabPage1
         '
+        Me.TabPage1.Controls.Add(Me.Label11)
+        Me.TabPage1.Controls.Add(Me.btnInlogOsiris)
+        Me.TabPage1.Controls.Add(Me.Label10)
+        Me.TabPage1.Controls.Add(Me.btnInlogGegevensOpgeven)
         Me.TabPage1.Controls.Add(Me.btnDatabaseLogin)
         Me.TabPage1.Controls.Add(Me.Label3)
         Me.TabPage1.Controls.Add(Me.btnOsirisStudentenOpvragen)
@@ -81,21 +100,60 @@ Partial Class frmMain
         Me.TabPage1.Padding = New System.Windows.Forms.Padding(3)
         Me.TabPage1.Size = New System.Drawing.Size(391, 289)
         Me.TabPage1.TabIndex = 0
-        Me.TabPage1.Text = "Onderwijs Online"
+        Me.TabPage1.Text = "Inlogdata"
         Me.TabPage1.UseVisualStyleBackColor = True
+        '
+        'Label11
+        '
+        Me.Label11.AutoSize = True
+        Me.Label11.ForeColor = System.Drawing.Color.Blue
+        Me.Label11.Location = New System.Drawing.Point(73, 64)
+        Me.Label11.Name = "Label11"
+        Me.Label11.Size = New System.Drawing.Size(197, 15)
+        Me.Label11.TabIndex = 10
+        Me.Label11.Text = "Inloggegevens Osiris en Middleware"
+        '
+        'btnInlogOsiris
+        '
+        Me.btnInlogOsiris.Location = New System.Drawing.Point(13, 59)
+        Me.btnInlogOsiris.Name = "btnInlogOsiris"
+        Me.btnInlogOsiris.Size = New System.Drawing.Size(50, 25)
+        Me.btnInlogOsiris.TabIndex = 9
+        Me.btnInlogOsiris.Text = "Inlog"
+        Me.btnInlogOsiris.UseVisualStyleBackColor = True
+        '
+        'Label10
+        '
+        Me.Label10.AutoSize = True
+        Me.Label10.ForeColor = System.Drawing.Color.Blue
+        Me.Label10.Location = New System.Drawing.Point(73, 22)
+        Me.Label10.Name = "Label10"
+        Me.Label10.Size = New System.Drawing.Size(178, 15)
+        Me.Label10.TabIndex = 8
+        Me.Label10.Text = "Inloggegevens Onderwijs Online"
+        '
+        'btnInlogGegevensOpgeven
+        '
+        Me.btnInlogGegevensOpgeven.Location = New System.Drawing.Point(13, 17)
+        Me.btnInlogGegevensOpgeven.Name = "btnInlogGegevensOpgeven"
+        Me.btnInlogGegevensOpgeven.Size = New System.Drawing.Size(50, 25)
+        Me.btnInlogGegevensOpgeven.TabIndex = 7
+        Me.btnInlogGegevensOpgeven.Text = "Inlog"
+        Me.btnInlogGegevensOpgeven.UseVisualStyleBackColor = True
         '
         'btnDatabaseLogin
         '
-        Me.btnDatabaseLogin.Location = New System.Drawing.Point(27, 172)
+        Me.btnDatabaseLogin.Location = New System.Drawing.Point(176, 175)
         Me.btnDatabaseLogin.Name = "btnDatabaseLogin"
         Me.btnDatabaseLogin.Size = New System.Drawing.Size(75, 23)
         Me.btnDatabaseLogin.TabIndex = 6
         Me.btnDatabaseLogin.UseVisualStyleBackColor = True
+        Me.btnDatabaseLogin.Visible = False
         '
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(87, 121)
+        Me.Label3.Location = New System.Drawing.Point(236, 124)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(152, 15)
         Me.Label3.TabIndex = 5
@@ -103,7 +161,7 @@ Partial Class frmMain
         '
         'btnOsirisStudentenOpvragen
         '
-        Me.btnOsirisStudentenOpvragen.Location = New System.Drawing.Point(27, 121)
+        Me.btnOsirisStudentenOpvragen.Location = New System.Drawing.Point(176, 124)
         Me.btnOsirisStudentenOpvragen.Name = "btnOsirisStudentenOpvragen"
         Me.btnOsirisStudentenOpvragen.Size = New System.Drawing.Size(35, 21)
         Me.btnOsirisStudentenOpvragen.TabIndex = 4
@@ -112,36 +170,40 @@ Partial Class frmMain
         'Label2
         '
         Me.Label2.AutoSize = True
-        Me.Label2.Location = New System.Drawing.Point(87, 34)
+        Me.Label2.Location = New System.Drawing.Point(236, 37)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(92, 15)
         Me.Label2.TabIndex = 3
         Me.Label2.Text = "Opvragen token" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10)
+        Me.Label2.Visible = False
         '
         'Label1
         '
         Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(87, 76)
+        Me.Label1.Location = New System.Drawing.Point(236, 79)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(136, 15)
         Me.Label1.TabIndex = 2
         Me.Label1.Text = "Opvragen studenten OO"
+        Me.Label1.Visible = False
         '
         'btnOpvragenStudenten
         '
-        Me.btnOpvragenStudenten.Location = New System.Drawing.Point(27, 72)
+        Me.btnOpvragenStudenten.Location = New System.Drawing.Point(176, 75)
         Me.btnOpvragenStudenten.Name = "btnOpvragenStudenten"
         Me.btnOpvragenStudenten.Size = New System.Drawing.Size(35, 23)
         Me.btnOpvragenStudenten.TabIndex = 1
         Me.btnOpvragenStudenten.UseVisualStyleBackColor = True
+        Me.btnOpvragenStudenten.Visible = False
         '
         'btnGetToken
         '
-        Me.btnGetToken.Location = New System.Drawing.Point(27, 30)
+        Me.btnGetToken.Location = New System.Drawing.Point(176, 33)
         Me.btnGetToken.Name = "btnGetToken"
         Me.btnGetToken.Size = New System.Drawing.Size(35, 23)
         Me.btnGetToken.TabIndex = 0
         Me.btnGetToken.UseVisualStyleBackColor = True
+        Me.btnGetToken.Visible = False
         '
         'TabPage2
         '
@@ -151,7 +213,7 @@ Partial Class frmMain
         Me.TabPage2.Location = New System.Drawing.Point(4, 24)
         Me.TabPage2.Name = "TabPage2"
         Me.TabPage2.Padding = New System.Windows.Forms.Padding(3)
-        Me.TabPage2.Size = New System.Drawing.Size(391, 286)
+        Me.TabPage2.Size = New System.Drawing.Size(391, 289)
         Me.TabPage2.TabIndex = 1
         Me.TabPage2.Text = "Sync instellingen"
         Me.TabPage2.UseVisualStyleBackColor = True
@@ -194,7 +256,7 @@ Partial Class frmMain
         Me.TabPage3.Location = New System.Drawing.Point(4, 24)
         Me.TabPage3.Name = "TabPage3"
         Me.TabPage3.Padding = New System.Windows.Forms.Padding(3)
-        Me.TabPage3.Size = New System.Drawing.Size(391, 286)
+        Me.TabPage3.Size = New System.Drawing.Size(391, 289)
         Me.TabPage3.TabIndex = 2
         Me.TabPage3.Text = "Osiris"
         Me.TabPage3.UseVisualStyleBackColor = True
@@ -270,10 +332,54 @@ Partial Class frmMain
         '
         'frmMainStatusStrip
         '
+        Me.frmMainStatusStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tsConnectieOsiris, Me.tsConnectieMiddleware, Me.tsStudentNummer, Me.tsCurrentState, Me.tsLastCheckTime, Me.tsAliveTime})
         Me.frmMainStatusStrip.Location = New System.Drawing.Point(0, 428)
         Me.frmMainStatusStrip.Name = "frmMainStatusStrip"
         Me.frmMainStatusStrip.Size = New System.Drawing.Size(800, 22)
         Me.frmMainStatusStrip.TabIndex = 1
+        '
+        'tsConnectieOsiris
+        '
+        Me.tsConnectieOsiris.AutoSize = False
+        Me.tsConnectieOsiris.Name = "tsConnectieOsiris"
+        Me.tsConnectieOsiris.Size = New System.Drawing.Size(119, 17)
+        Me.tsConnectieOsiris.Text = "Osiris niet verbonden"
+        '
+        'tsConnectieMiddleware
+        '
+        Me.tsConnectieMiddleware.AutoSize = False
+        Me.tsConnectieMiddleware.Name = "tsConnectieMiddleware"
+        Me.tsConnectieMiddleware.Size = New System.Drawing.Size(152, 17)
+        Me.tsConnectieMiddleware.Text = "Middleware niet verbonden"
+        '
+        'tsStudentNummer
+        '
+        Me.tsStudentNummer.AutoSize = False
+        Me.tsStudentNummer.Name = "tsStudentNummer"
+        Me.tsStudentNummer.Size = New System.Drawing.Size(82, 17)
+        Me.tsStudentNummer.Text = "Student nr"
+        '
+        'tsCurrentState
+        '
+        Me.tsCurrentState.AutoSize = False
+        Me.tsCurrentState.Name = "tsCurrentState"
+        Me.tsCurrentState.Size = New System.Drawing.Size(87, 17)
+        Me.tsCurrentState.Text = "Status software"
+        '
+        'tsLastCheckTime
+        '
+        Me.tsLastCheckTime.AutoSize = False
+        Me.tsLastCheckTime.Name = "tsLastCheckTime"
+        Me.tsLastCheckTime.Size = New System.Drawing.Size(135, 17)
+        Me.tsLastCheckTime.Text = "Last Check: not checked"
+        '
+        'tsAliveTime
+        '
+        Me.tsAliveTime.AutoSize = False
+        Me.tsAliveTime.ForeColor = System.Drawing.Color.Blue
+        Me.tsAliveTime.Name = "tsAliveTime"
+        Me.tsAliveTime.Size = New System.Drawing.Size(34, 17)
+        Me.tsAliveTime.Text = "00:00"
         '
         'btnCheckBeschikbareMutatiesOsiris
         '
@@ -302,6 +408,7 @@ Partial Class frmMain
         Me.chkUitgebreideLogging.TabIndex = 6
         Me.chkUitgebreideLogging.Text = "Uitgebreide logging"
         Me.chkUitgebreideLogging.UseVisualStyleBackColor = True
+        Me.chkUitgebreideLogging.Visible = False
         '
         'txtTriggerNiveau
         '
@@ -320,11 +427,28 @@ Partial Class frmMain
         Me.Label9.TabIndex = 8
         Me.Label9.Text = "triggerniveau"
         '
+        'timTimerCheck
+        '
+        '
+        'chkAutomatischChecken
+        '
+        Me.chkAutomatischChecken.AutoSize = True
+        Me.chkAutomatischChecken.Location = New System.Drawing.Point(83, 38)
+        Me.chkAutomatischChecken.Name = "chkAutomatischChecken"
+        Me.chkAutomatischChecken.Size = New System.Drawing.Size(139, 19)
+        Me.chkAutomatischChecken.TabIndex = 9
+        Me.chkAutomatischChecken.Text = "automatisch checken"
+        Me.chkAutomatischChecken.UseVisualStyleBackColor = True
+        '
+        'timStoppen
+        '
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(800, 450)
+        Me.Controls.Add(Me.chkAutomatischChecken)
         Me.Controls.Add(Me.Label9)
         Me.Controls.Add(Me.txtTriggerNiveau)
         Me.Controls.Add(Me.chkUitgebreideLogging)
@@ -344,6 +468,8 @@ Partial Class frmMain
         Me.TabPage2.PerformLayout()
         Me.TabPage3.ResumeLayout(False)
         Me.TabPage3.PerformLayout()
+        Me.frmMainStatusStrip.ResumeLayout(False)
+        Me.frmMainStatusStrip.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -377,4 +503,17 @@ Partial Class frmMain
     Friend WithEvents txtTriggerNiveau As TextBox
     Friend WithEvents Label9 As Label
     Friend WithEvents chkStudentenVandaagGechecktOverslaan As CheckBox
+    Friend WithEvents tsConnectieOsiris As ToolStripStatusLabel
+    Friend WithEvents tsConnectieMiddleware As ToolStripStatusLabel
+    Friend WithEvents tsStudentNummer As ToolStripStatusLabel
+    Friend WithEvents tsCurrentState As ToolStripStatusLabel
+    Friend WithEvents timTimerCheck As Timer
+    Friend WithEvents chkAutomatischChecken As CheckBox
+    Friend WithEvents tsLastCheckTime As ToolStripStatusLabel
+    Friend WithEvents btnInlogGegevensOpgeven As Button
+    Friend WithEvents Label10 As Label
+    Friend WithEvents Label11 As Label
+    Friend WithEvents btnInlogOsiris As Button
+    Friend WithEvents timStoppen As Timer
+    Friend WithEvents tsAliveTime As ToolStripStatusLabel
 End Class

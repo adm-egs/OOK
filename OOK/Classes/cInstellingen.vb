@@ -1,4 +1,5 @@
-﻿Imports System.IO
+﻿Imports System.Data.OleDb
+Imports System.IO
 Imports System.Net
 Imports Newtonsoft.Json.Linq
 Imports Oracle.ManagedDataAccess.Client
@@ -31,7 +32,7 @@ Public Class cInstellingen
     Private _sqlStudentMutaties As String = ""
     Private _sqlGroepMutaties As String = ""
     Private _sqlOpleidingMutaties As String = ""
-
+    Private _stoppen As Boolean = False
 
 
     Public Property GrantType As String
@@ -284,6 +285,15 @@ Public Class cInstellingen
         End Set
     End Property
 
+    Public Property Stoppen As Boolean
+        Get
+            Return _stoppen
+        End Get
+        Set(value As Boolean)
+            _stoppen = value
+        End Set
+    End Property
+
     Public Sub New()
 
         Try
@@ -329,7 +339,7 @@ Public Class cInstellingen
         End Try
 
         Try
-            _sqlOpleidingMutaties = getQuery("osiris\08_opleidingsMutaties")
+            _sqlOpleidingMutaties = getQuery("osiris\08_opleidingsMutaties.txt")
         Catch ex As Exception
             Throw New Exception("Kan query opleidingsmutaties niet inlezen")
         End Try
@@ -352,7 +362,8 @@ Public Class cInstellingen
                 Return True
             End If
 
-            Dim client As New RestSharp.RestClient("https://mboutrechttest.onderwijsonline.nl/oauth/token")
+            'Dim client As New RestSharp.RestClient("https://mboutrechttest.onderwijsonline.nl/oauth/token")
+            Dim client As New RestSharp.RestClient(i.BasisUrl & "/oauth/token")
             Dim request As New RestSharp.RestRequest()
 
             client.Timeout = -1
@@ -360,8 +371,10 @@ Public Class cInstellingen
 
             request.AddHeader("Content-Type", "application/x-www-form-urlencoded")
             request.AddHeader("Cookie", "simplesaml=5e71be56aea3236f30ebca99590b2518")
-            request.AddParameter("client_id", "3")
-            request.AddParameter("client_secret", "dsKmUa8bbNLxf8YgFoXnVn5LVYsWS666l70sd4ey")
+            'request.AddParameter("client_id", "3")
+            request.AddParameter("client_id", i.ClientId)
+            'request.AddParameter("client_secret", "dsKmUa8bbNLxf8YgFoXnVn5LVYsWS666l70sd4ey")
+            request.AddParameter("client_secret", i.ClientSecret)
             request.AddParameter("grant_type", "client_credentials")
 
             Dim response As RestSharp.RestResponse = client.Execute(request)
@@ -404,8 +417,8 @@ Public Class cInstellingen
         Try
             GetURLS()
 
-            ClientId = ini.GetString("connect", "client_id", "")
-            ClientSecret = ini.GetString("connect", "client_secret", "")
+            ClientId = Decrypt(ini.GetString("connect", "pfq@874", ""))
+            ClientSecret = Decrypt(ini.GetString("connect", "3@4XX", ""))
             OmgevingsNaam = ini.GetString("algemeen", "omgeving", "onbekend")
             If LaadOpleidingen() = False Then Return False            'vullen dictionary Opleidingen
             If LaadTeamsUitOO() = False Then FatalError("Kan geen teams inlezen uit OSIRIS")
@@ -740,12 +753,19 @@ Public Class cInstellingen
     Public Function GetURLS() As Boolean
         dURLS.Clear()
         '
-        dURLS.Add("BasisUrl", ini.GetString("OO", "BasisURL", ""))
-        dURLS.Add("StudentGet", ini.GetString("OO", "StudentURL", ""))
-        dURLS.Add("TeamGet", ini.GetString("OO", "TeamURL", ""))
-        dURLS.Add("Opleidingen", ini.GetString("OO", "Opleidingen", ""))
-        BasisUrl = dURLS("BasisUrl")
+        '  dURLS.Add("BasisUrl", ini.GetString("OO", "BasisURL", ""))
+        ' dURLS.Add("StudentGet", ini.GetString("OO", "StudentURL", ""))
+        ' dURLS.Add("TeamGet", ini.GetString("OO", "TeamURL", ""))
+        ' dURLS.Add("Opleidingen", ini.GetString("OO", "Opleidingen", ""))
+        '"Connect", "+()23Z"
+        BasisUrl = Decrypt(ini.GetString("Connect", "+()23Z", ""))
+        If Right(BasisUrl, 1) = "/" Then BasisUrl = Left(BasisUrl, Len(BasisUrl) - 1) 'forwared / backward slash eraf halen
+        If Right(BasisUrl, 1) = "\" Then BasisUrl = Left(BasisUrl, Len(BasisUrl) - 1)
 
+        dURLS.Add("BasisUrl", BasisUrl)
+        dURLS.Add("StudentGet", BasisUrl & "/api/v1/user")
+        dURLS.Add("TeamGet", BasisUrl & "/api/v1/team")
+        dURLS.Add("Opleidingen", BasisUrl & "/api/v1/program")
         Return True
 
     End Function
@@ -764,7 +784,7 @@ Public Class cInstellingen
         End Try
     End Function
 
-    Public Function CheckOsirisVoorMutaties()
+    Public Function CheckOpenstaandeMutaties()
         'functie controleert diverse tabellen op relevante mutatis
         'ost_student - STUDENT - NAW    //select distinct mutatiedatum from ost_student;
         'OST_groep //ost_sgroep_student
@@ -773,34 +793,19 @@ Public Class cInstellingen
 
         Dim sStudentNummer As String = ""
         Dim mutatieDatum As Date
-        Dim dCheck As Date
-
-        'Dim sDate As String = ini.GetString("Check", "last_check_student", "")
-        'If sDate = "" Then
-        '    dCheck = Now.Date()
-        'Else
-        '    'format er uit halen is YYYY-MM-DD HH24:MI
-        '    Dim jaar As Integer = CInt(Left(sDate, 4))
-        '    Dim maand As Integer = CInt(Mid(sDate, 6, 2))
-        '    Dim dag As Integer = CInt(Mid(sDate, 9, 2))
-        '    Dim UUr As Integer = CInt(Mid(sDate, 12, 2))
-        '    Dim minuut As Integer = CInt(Mid(sDate, 15, 2))
-        '    dCheck = New Date(jaar, maand, dag, UUr, minuut, 0)
-        'End If
-        dCheck = Last_check_Date("last_check_student")
-        Dim sStudentCheck As String = SqlStudentMutaties(dCheck)
-
 
         'doe check
 
-
         Dim EersteMutatieDatumStudent As Date = New Date(2099, 8, 1)
         'studentmutaties verwerken
+        frmMain.tsCurrentState.Text = "Checking studentent mutaties"
         Try
-            Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(sStudentCheck)
+            Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlStudentMutaties(Last_check_Date("last_check_student")))
             If Not IsNothing(rd) Then
                 If rd.HasRows Then
+
                     While rd.Read
+                        If i.Stoppen = True Then Exit Function
                         sStudentNummer = dbOsiris.oraSafeGetDecimal(rd, "studentnummer")
                         mutatieDatum = dbOsiris.oraGetSafeDate(rd, "mutatie_datum")
                         If mutatieDatum < EersteMutatieDatumStudent Then
@@ -819,10 +824,12 @@ Public Class cInstellingen
 
         'groepsmutaties verwerken
         Dim EersteMutatieDatumGroep As Date = New Date(2099, 8, 1)
+        frmMain.tsCurrentState.Text = "Checking groeps mutaties"
         Try
-            Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(sStudentCheck)
+            Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlGroepMutaties(Last_check_Date("last_check_groep")))
             If Not IsNothing(rd) Then
                 If rd.HasRows Then
+                    If i.Stoppen = True Then Exit Function
                     While rd.Read
                         sStudentNummer = dbOsiris.oraSafeGetDecimal(rd, "studentnummer")
                         mutatieDatum = dbOsiris.oraGetSafeDate(rd, "mutatie_datum")
@@ -832,24 +839,60 @@ Public Class cInstellingen
 
                         GetStudentsOsiris(sStudentNummer)
                         dictOsirisStudentenKeyStudentNr(sStudentNummer).ChangeUserInOO()
-                        l.LOGTHIS("Groepsmutatie verwerkt: " & sStudentNummer, 10)
+                        l.LOGTHIS("Groepsmutatie verwerkt voor student : " & sStudentNummer, 10)
                     End While
                 End If
             End If
         Catch ex As Exception
-            l.LOGTHIS("Fout bij verwerken studentmutatie: " & ex.Message)
+            l.LOGTHIS("Fout bij verwerken groepsmutatie: " & ex.Message, 50)
         End Try
 
 
         'opleidingsmutaties verwerken
+        Dim EersteMutatieDatumOpleiding As Date = New Date(2099, 8, 1)
+        frmMain.tsCurrentState.Text = "Checking opleidingen mutaties"
+        Try
+            Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlOpleidingMutaties(Last_check_Date("last_check_opleiding")))
+            If Not IsNothing(rd) Then
+                If rd.HasRows Then
+                    While rd.Read
+                        If i.Stoppen = True Then Exit Function
+                        sStudentNummer = dbOsiris.oraSafeGetDecimal(rd, "studentnummer")
+                        mutatieDatum = dbOsiris.oraGetSafeDate(rd, "mutatie_datum")
+                        mutatieDatum = New Date(mutatieDatum.Year, mutatieDatum.Month, mutatieDatum.Day, mutatieDatum.Hour, mutatieDatum.Minute, mutatieDatum.Second)
+                        If mutatieDatum < EersteMutatieDatumOpleiding Then
+                            EersteMutatieDatumOpleiding = mutatieDatum   'opslaan wat de eerste mutatiedatum is voor toekomstige mutaties
+                        End If
+
+                        GetStudentsOsiris(sStudentNummer)
+                        dictOsirisStudentenKeyStudentNr(sStudentNummer).ChangeUserInOO()
+                        l.LOGTHIS("Opleidingsmutatie verwerkt voor student : " & sStudentNummer, 10)
+                    End While
+                End If
+            End If
+        Catch ex As Exception
+            l.LOGTHIS("Fout bij verwerken OpleidingsMutatie: " & ex.Message, 50)
+        End Try
+
+        'verwerken mutaties die in de middleware staan (geplande groepsdeelnames en geplande opleidingen)
+        'opvragen mutaties 
+        frmMain.tsCurrentState.Text = "Geplande mutaties checken"
+        If i.Stoppen = False Then GeplandeMutatiesControleren()
 
 
-        i.LastMutatieDatumCheckedStudent = EersteMutatieDatumStudent
-        i.LastMutatieDatumCheckedGroep = EersteMutatieDatumGroep
+
+        LastMutatieDatumCheckedStudent = CheckDate(EersteMutatieDatumStudent)
+        LastMutatieDatumCheckedGroep = CheckDate(EersteMutatieDatumGroep)
+        LastMutatieDatumCheckedOpleiding = CheckDate(EersteMutatieDatumOpleiding)
 
         'tijd wegschrijven
-        ini.WriteString("Check", "last_check_student", LastMutatieDatumCheckedStudent.ToString("yyyy-MM-dd HH:ss"))
+        ini.WriteString("Check", "last_check_student", LastMutatieDatumCheckedStudent.ToString("yyyy-MM-dd HH:mm:ss"))
+        ini.WriteString("Check", "last_check_groep", LastMutatieDatumCheckedGroep.ToString("yyyy-MM-dd HH:mm:ss"))
+        ini.WriteString("Check", "last_check_opleiding", Now.ToString("yyyy-MM-dd HH:mm:ss"))
 
+        frmMain.tsCurrentState.Text = "Ready for action"
+        frmMain.tsLastCheckTime.Text = Now()
+        Return True
 
 
     End Function
@@ -869,10 +912,52 @@ Public Class cInstellingen
             Dim dag As Integer = CInt(Mid(sDate, 9, 2))
             Dim UUr As Integer = CInt(Mid(sDate, 12, 2))
             Dim minuut As Integer = CInt(Mid(sDate, 15, 2))
-            dCheck = New Date(jaar, maand, dag, UUr, minuut, 0)
+            Dim seconden As Integer = CInt(Mid(sDate, 18, 2))
+            dCheck = New Date(jaar, maand, dag, UUr, minuut, seconden)
         End If
         Return dCheck
     End Function
+
+    Private Function CheckDate(d2Check As Date) As Date
+        If d2Check > Now() Then
+            Return Now
+        Else
+            Return d2Check
+        End If
+    End Function
+    Private Function GeplandeMutatiesControleren() As Boolean
+        Dim sQuery As String = "select id, persoonId from koppel.db_oo.mutatielog where datum_tijd < getdate() and verwerkt='N'"
+        Dim rd As OleDbDataReader = dbMiddleWare.sqlQueryUitvoeren(sQuery)
+        If rd.HasRows = False Then
+            rd.Close()
+            frmMain.frmMainStatusStrip.Text = "Geen geplande mutaties gevonden"
+            Return True
+        End If
+
+        Dim count As Long = 0
+        While rd.Read
+            Try
+                Dim sStudentNummer As String = rd.GetString(1)
+                Dim lngId As Long = rd.GetDecimal(0)
+                GetStudentsOsiris(sStudentNummer)
+                dictOsirisStudentenKeyStudentNr(sStudentNummer).ChangeUserInOO()
+
+                Dim sql As String = "Update koppel.db_oo.mutatielog set verwerkt= 'J' where id=" & lngId
+                Dim cmd As OleDbCommand = New OleDbCommand(sql, dbMiddleWare.conSQL)
+                cmd.ExecuteScalar()
+
+                l.LOGTHIS("geplande mutatie verwerkt voor student : " & sStudentNummer, 10)
+
+            Catch ex As Exception
+                l.LOGTHIS("Fout bij verwerken geplande mutaties")
+            End Try
+
+
+            count += 1
+        End While
+        Return True
+    End Function
+
     Public Function OO_JSON_REQUEST(urlRequest As String, sOmschrijving As String, sStudentNummer As String, methode As RestSharp.Method) As String
         'standaard deel van een request 
         Try
@@ -901,6 +986,45 @@ Public Class cInstellingen
         End Try
 
     End Function
+    Function Decrypt(ByRef strString As String) As String
 
+        'functie om string te decrypten
+        'iedere letter wordt afzonderlijk aangepast,
+        'vervolgens achterste voren wegschrijven
+        'om te voorkomen dat wachtwoorden als leesbare tekst
+        'in de ini file komen te staan.
+        'is geen garantie !
+
+        Dim x As Short
+        Dim strOut As String = ""
+        Dim strChar As String
+
+        For x = 1 To Len(strString)
+            strChar = Mid(strString, x, 1)
+            strOut = Chr(Asc(strChar) + 1) & strOut
+        Next
+        Return strOut
+    End Function
+
+
+    Function Encrypt(ByRef strString As String) As String
+        'functie om string te decrypten
+        'iedere letter wordt afzonderlijk aangepast,
+        'vervolgens achterste voren wegschrijven
+        'om te voorkomen dat wachtwoorden als leesbare tekst
+        'in de ini file komen te staan.
+        'is geen garantie !
+
+        Dim x As Short
+        Dim strOut As String = ""
+        Dim strChar As String
+
+        For x = 1 To Len(strString)
+            strChar = Mid(strString, x, 1)
+            strOut = Chr(Asc(strChar) - 1) & strOut
+        Next
+        Return strOut
+
+    End Function
 
 End Class

@@ -87,7 +87,7 @@
         cmdStart.CommandText = "db_umra_2021.update_groepsdeelname"
 
         With cmdStart.Parameters
-            .AddWithValue("@sleutel", UniqueKey)
+            .AddWithValue("@sleutel", UniqueKey & "S")
             .AddWithValue("@datum_tijd", Me.IngangsDatum)
             .AddWithValue("@omgeving", i.OmgevingsNaam)
             .AddWithValue("@tabel", "Groepsdeelname")
@@ -101,20 +101,19 @@
             Try
                 cmdStart.Connection = dbMiddleWare.conSQL
                 cmdStart.ExecuteNonQuery()
-
             Catch ex As Exception
                 Return False
             End Try
-
         Else
             Return False
         End If
+
         Dim cmdEnd As New OleDb.OleDbCommand
         cmdStart.CommandType = CommandType.StoredProcedure
         cmdStart.CommandText = "db_umra_2021.update_groepsdeelname"
 
         With cmdEnd.Parameters
-            .AddWithValue("@sleutel", UniqueKey)
+            .AddWithValue("@sleutel", UniqueKey & "E")
             .AddWithValue("@datum_tijd", Me.AfloopDatum)
             .AddWithValue("@omgeving", i.OmgevingsNaam)
             .AddWithValue("@tabel", "Groepsdeelname")

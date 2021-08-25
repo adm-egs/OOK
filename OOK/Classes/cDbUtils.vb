@@ -64,6 +64,7 @@ Public Class cDbUtils
                 conOra.ConnectionString = oraConString
                 conOra.Open()
                 l.LOGTHIS("Verbinding met Oracle server geopend", 10)
+                frmMain.tsConnectieOsiris.Text = "Osiris verbonden"
             Catch ex As Exception
                 Debug.Print(ex.Message)
                 Debug.Print(oraConString)
@@ -72,6 +73,7 @@ Public Class cDbUtils
                 If l.UitgebreideLogging Then
                     l.LOGTHIS(oraConString)
                 End If
+                frmMain.tsConnectieOsiris.Text = "Osiris verbroken"
                 Throw New Exception("Kan de database niet openen")
                 Return False
             End Try
@@ -218,10 +220,12 @@ Public Class cDbUtils
                 conSQL.ConnectionString = sqlConstring
                 conSQL.Open()
                 l.LOGTHIS("Verbinding met SQL server geopend")
+                frmMain.tsConnectieMiddleware.Text = "Middleware verbonden"
             Catch ex As Exception
                 l.LOGTHIS("Kan de database niet openen", 25)
                 l.LOGTHIS(sqlConstring, 25)
                 Throw New Exception("Kan de database niet openen")
+                frmMain.tsConnectieOsiris.Text = "Middleware verbroken"
                 Return False
             End Try
         End If

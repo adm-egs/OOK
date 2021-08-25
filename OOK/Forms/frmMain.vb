@@ -1,4 +1,5 @@
 ﻿Imports System.Data.OleDb
+Imports System.IO
 
 Public Class frmMain
     Public Delegate Sub LogTekstDelegate(ByVal tekst As String)
@@ -28,13 +29,23 @@ Public Class frmMain
         dbOsiris = New cDbUtils
         dbMiddleWare = New cDbUtils
         'dbOsiris.oraConString = "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.69.31)(PORT=1523))(CONNECT_DATA=(SERVICE_NAME=utrtsts)));User Id=MROMBOUTS;Password=Pretpark_draaimolen_5891;"
+        'dbOsiris.oraConString = "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.69.31)(PORT=1523))(CONNECT_DATA=(SERVICE_NAME=utrtsts)));User Id=MBOUMW21;Password=Appelmoes_Zwemmen_93355;"
         dbOsiris.oraConString = "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.69.31)(PORT=1523))(CONNECT_DATA=(SERVICE_NAME=utrtsts)));User Id=MBOUMW21;Password=Appelmoes_Zwemmen_93355;"
-        dbMiddleWare.sqlConstring = "Provider=MSOLEDBSQL;Server=SQL803354-PRD;Database=Koppel;UID=ook_user_middleware;PWD=v@!SExwku5BTOa%tWq!3"
+        dbOsiris.oraConString = "Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.69.32)(PORT=1522))(CONNECT_DATA=(SERVICE_NAME=utrprds)));User Id=MBOUMW21;Password=Multomap_Vuilnisbak_55920;"
+        'ini.WriteString("connect", "&^2345", i.Decrypt(Me.txtUserName.Text))
+        'ini.WriteString("connect", "562-0", i.Decrypt(Me.txtPassWord.Text))
+        'ini.WriteString("connect", "_2456!", i.Decrypt(Me.txtDataBase.Text))
+        'ini.WriteString("connect", "&^2345", i.Decrypt(Me.txtOsirisConnectString.Text))
+        'ini.WriteString("connect", "562-0", i.Decrypt(Me.txtMiddlewareConnectString.Text))
+        dbOsiris.oraConString = i.Decrypt(ini.GetString("connect", "&^2345", ""))
+        'dbMiddleWare.sqlConstring = "Provider=MSOLEDBSQL;Server=SQL803354-PRD;Database=Koppel;UID=ook_user_middleware;PWD=v@!SExwku5BTOa%tWq!3"
+        dbMiddleWare.sqlConstring = i.Decrypt(ini.GetString("connect", "562-0", ""))
+
         Me.txtStudentNummer.Text = ini.GetString("algemeen", "laststudent", "")
         Me.txtTriggerNiveau.Text = ini.GetString("algemeen", "triggerniveau", "1")
         If i.LoadDefaults = False Then
             l.LOGTHIS("Opvragen instellingen niet gelukt", 25)
-            End
+
         End If
         Dim sLoggingState As String = ini.GetString("algemeen", "uitgbreidelogging", "Nee")
         If sLoggingState = "Ja" Then
@@ -43,8 +54,40 @@ Public Class frmMain
             Me.chkUitgebreideLogging.Checked = False
         End If
 
-    End Sub
+        'bestand stoppen.txt verwijderen
+        Dim fi As New FileInfo(Application.StartupPath & "\stoppen.txt")
+        If fi.Exists Then
+            l.LOGTHIS("Stoppen.txt verwijderd bij opstarten", 50)
+            Try
+                fi.Delete()
+            Catch ex As Exception
 
+            End Try
+        End If
+
+        StopTimerStarten()
+        CheckOpstartArgumenten()
+
+    End Sub
+    Sub CheckOpstartArgumenten()
+        'controleren of er commandline argumenten gegeven zijn
+        If My.Application.CommandLineArgs.Count = 0 Then Exit Sub
+
+        Dim strArgument As String = ""
+        Dim strResult As String = ""
+
+        strArgument = My.Application.CommandLineArgs(0).ToString
+        strArgument = LCase(Trim(strArgument))
+
+        'controleren 1e argument
+        If strArgument = "verwerken_mutaties" Then
+            l.LOGTHIS("verwerken mutaties op basis van opstart argument")
+            Me.chkAutomatischChecken.Checked = True
+            'start_timer()
+            Exit Sub
+        End If
+
+    End Sub
     Private Sub TabControl1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TabControl1.SelectedIndexChanged
 
     End Sub
@@ -147,7 +190,7 @@ Public Class frmMain
     End Sub
 
     Private Sub btnCheckBeschikbareMutatiesOsiris_Click(sender As Object, e As EventArgs) Handles btnCheckBeschikbareMutatiesOsiris.Click
-        i.CheckOsirisVoorMutaties()
+        i.CheckOpenstaandeMutaties()
     End Sub
 
     Private Sub chkUitgebreideLogging_CheckedChanged(sender As Object, e As EventArgs) Handles chkUitgebreideLogging.CheckedChanged
@@ -166,10 +209,11 @@ Public Class frmMain
 
     Private Sub btnSyncOsiris2OO_Click(sender As Object, e As EventArgs) Handles btnSyncOsiris2OO.Click
         'vullen lijst met studenten
+
         i.GetStudentsOsiris()
         l.LOGTHIS("Alle studenten checken : " & dictOsirisStudentenKeyStudentNr.Count, 25)
         Dim iniCheck As New cIniFile(Application.StartupPath & "\checklist-" & Now.Date.ToShortDateString & ".ini")
-
+        Me.tsCurrentState.Text = ">> Working"
         For Each student In dictOsirisStudentenKeyStudentNr
             Try
                 If Me.chkStudentenVandaagGechecktOverslaan.Checked = True Then
@@ -197,11 +241,11 @@ next_rec:
 
     Private Sub txtTriggerNiveau_TextChanged(sender As Object, e As EventArgs) Handles txtTriggerNiveau.TextChanged
         ini.WriteString("Algemeen", "triggerniveau", txtTriggerNiveau.Text)
+
         Try
             l.LogLevelTrigger = CInt(Me.txtTriggerNiveau.Text)
         Catch ex As Exception
             l.LogLevelTrigger = 0
-
         End Try
 
 
@@ -210,4 +254,107 @@ next_rec:
     Private Sub chkStudentenVandaagGechecktOverslaan_CheckedChanged(sender As Object, e As EventArgs) Handles chkStudentenVandaagGechecktOverslaan.CheckedChanged
 
     End Sub
+
+    Sub start_timer()
+        l.LOGTHIS("Automatisch verwerken gestart")
+        Me.timTimerCheck.Interval = 5000   '5 seconden na starten wordt de 1e check gedaan
+        Me.timTimerCheck.Enabled = True
+
+    End Sub
+
+    Sub Stop_timer()
+
+        Me.timTimerCheck.Enabled = False
+        l.LOGTHIS("Automatisch verwerken gestopt")
+    End Sub
+    Private Sub timTimerCheck_Tick(sender As Object, e As EventArgs) Handles timTimerCheck.Tick
+        Me.timTimerCheck.Enabled = False
+        'tijdelijk de timer uitzetten
+        Me.UseWaitCursor = True
+        If i.Stoppen = False Then
+            i.CheckOpenstaandeMutaties()
+        Else
+            Me.UseWaitCursor = False
+            Me.timTimerCheck.Interval = 60000       '1 minuut
+            Me.timTimerCheck.Enabled = False
+        End If
+
+        'systeem weer activeren
+        Me.UseWaitCursor = False
+        Me.timTimerCheck.Interval = 60000       '1 minuut
+        Me.timTimerCheck.Enabled = True
+    End Sub
+
+    Private Sub chkAutomatischChecken_CheckedChanged(sender As Object, e As EventArgs) Handles chkAutomatischChecken.CheckedChanged
+        If chkAutomatischChecken.Checked = True Then
+            Me.chkAutomatischChecken.Text = "Stoppen automatisch verwerken"
+            InterfaceEnable(False)
+            i.Stoppen = False
+            start_timer()
+
+        Else
+            Me.chkAutomatischChecken.Text = "Starten automatisch verwerken"
+            InterfaceEnable(True)
+            i.Stoppen = True
+            Stop_timer()
+        End If
+    End Sub
+
+    Private Function InterfaceEnable(bStatus As Boolean) As Boolean
+        'interface aan / uit zetten tbv automatisch verwerken
+        btnCheckBeschikbareMutatiesOsiris.Enabled = bStatus
+        txtStudentNummer.Enabled = bStatus
+        btnInlogGegevensOpgeven.Enabled = bStatus
+        btnInlogOsiris.Enabled = bStatus
+        btnSyncOsiris2OO.Enabled = bStatus
+        chkStudentenVandaagGechecktOverslaan.Enabled = bStatus
+        btnStuurStudentNaarOO.Enabled = bStatus
+        btnCheckMutaties.Enabled = bStatus
+        Application.DoEvents()
+        Return True
+    End Function
+    Private Sub btnInlogGegevensOpgeven_Click(sender As Object, e As EventArgs) Handles btnInlogGegevensOpgeven.Click
+        If frmInlog.ShowDialog() <> DialogResult.OK Then
+            l.LOGTHIS("No change in inlogdata Onderwijs Online", 10)
+        End If
+    End Sub
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles btnInlogOsiris.Click
+        If frmInlogOsiris.ShowDialog <> DialogResult.OK Then
+            l.LOGTHIS("No change in inlogdata OSIRIS", 10)
+        End If
+    End Sub
+
+
+    Function StopTimerStarten() As Boolean
+        Me.timStoppen.Interval = 5000
+        Me.timStoppen.Enabled = True
+        Return True
+    End Function
+
+    Private Sub timStoppen_Tick(sender As Object, e As EventArgs) Handles timStoppen.Tick
+        'check of stoppen.txt bestaat
+        Dim fi As New FileInfo(Application.StartupPath & "\stoppen.txt")
+        If fi.Exists Then
+            l.LOGTHIS("Stoppen aangevraagd via bestand stoppen.txt", 50)
+            Try
+                fi.Delete()
+            Catch ex As Exception
+
+            End Try
+            i.Stoppen = True
+            For x As Integer = 1001 To 0 Step -1
+                Application.DoEvents()
+                Threading.Thread.Sleep(10)
+                If x Mod 100 = 0 Then
+                    l.LOGTHIS("ONCD-002 >> SHUTDOWN : " & x / 100)
+                End If
+                If x = 0 Then End
+            Next
+        Else
+            Me.tsAliveTime.Text = Format(Now, "HH:mm")
+        End If
+    End Sub
+
+
 End Class
