@@ -371,7 +371,14 @@ next_rec:
 
         l.LOGTHIS("medewerker " & Me.txtLetterCode.Text & " bestaat in UMRA", 2)
         'controleren of medewerker in OO bestaat
+        Dim m As New cMedewerker
+        m.Username = Me.txtLetterCode.Text
+        m = m.GetMedewerkerClassUitOo()
+        If m.BekendInOO Then
+            Debug.Print(m.Achternaam)
+        Else
+            'bestaat nog niet
 
-
+        End If
     End Sub
 End Class

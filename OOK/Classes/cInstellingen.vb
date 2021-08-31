@@ -35,6 +35,7 @@ Public Class cInstellingen
     Private _stoppen As Boolean = False
     Private _SqlCountStudentMutaties As String = ""
     Private _sqlCountGroepsMutaties As String = ""
+    Private _sqlCountOpleidinsgMutaties As String = ""
 
 
     Public Property GrantType As String
@@ -324,6 +325,14 @@ Public Class cInstellingen
         End Get
     End Property
 
+    Public ReadOnly Property sqlCountOpleidingsMutaties(datum As Date) As String
+        Get
+            Dim sHelp As String = _sqlCountOpleidinsgMutaties
+            sHelp = Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:ss"))
+            Return sHelp
+
+        End Get
+    End Property
 
     Public Sub New()
 
@@ -392,6 +401,12 @@ Public Class cInstellingen
             _sqlCountGroepsMutaties = getQuery("osiris\10_CountGroepsMutaties.txt")
         Catch ex As Exception
             Throw New Exception("Kan query osiris\10_CountGroepsMutaties.txt niet inlezen")
+        End Try
+
+        Try
+            _sqlCountOpleidinsgMutaties = getQuery("osiris\11_CountOpleidingsMutaties.txt")
+        Catch ex As Exception
+            Throw New Exception("Kan query osiris\11_CountOpleidingsMutaties.txt niet inlezen")
         End Try
     End Sub
     Public Function GetToken() As Boolean
@@ -833,153 +848,50 @@ Public Class cInstellingen
         ';    //ost_student_ook
         'opvragen last check datum / tijd
 
-        Dim sStudentNummer As String = ""
-        Dim mutatieDatum As Date
+        'Dim sStudentNummer As String = ""
+        ' Dim mutatieDatum As Date
 
         'doe check
-
-        Dim EersteMutatieDatumStudent As Date = New Date(2099, 8, 1)
-        'studentmutaties verwerken
-        frmMain.tsCurrentState.Text = "Checking studentent mutaties"
         Try
+            ' Dim OudsteMutatieDatumStudent As Date = New Date(2000, 8, 1)
+            'studentmutaties verwerken
+            frmMain.tsCurrentState.Text = "Studentent mutaties"
             Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlStudentMutaties(Last_check_Date("last_check_student")))
-            If Not IsNothing(rd) Then
-                If rd.HasRows Then
-                    'aantal rows opvragen
-                    Dim rdCount As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlCountStudentMutaties(Last_check_Date("last_check_student")))
-                    rdCount.Read()
-                    Dim max As Long = dbOsiris.oraSafeGetDecimal(rdCount, "aantal")
-                    'While rdCount.Read
-                    '    max += 1
-                    'End While
-
-                    Dim Counter As Long = 0
-                    frmMain.pbMutaties.Maximum = max
-                    frmMain.pbMutaties.Value = Counter
-                    frmMain.tsAutoVerwerkenActie.Text = max & " studentmutaties"
-
-                    While rd.Read
-                        If i.Stoppen = True Then Exit Function
-                        sStudentNummer = dbOsiris.oraSafeGetDecimal(rd, "studentnummer")
-                        mutatieDatum = dbOsiris.oraGetSafeDate(rd, "mutatie_datum")
-                        If mutatieDatum < EersteMutatieDatumStudent Then
-                            EersteMutatieDatumStudent = mutatieDatum   'opslaan wat de eerste mutatiedatum is voor toekomstige mutaties
-                        End If
-
-                        GetStudentsOsiris(sStudentNummer)
-                        dictOsirisStudentenKeyStudentNr(sStudentNummer).ChangeUserInOO()
-                        l.LOGTHIS("Studentmutatie verwerkt: " & sStudentNummer, 10)
-                        Counter += 1
-                        frmMain.pbMutaties.Value = Counter
-                        Application.DoEvents()
-                    End While
-                End If
-            End If
-
-
+            VerwerkItems(rd, "last_check_student")
         Catch ex As Exception
-            l.LOGTHIS("Fout bij verwerken studentmutatie: " & ex.Message)
+            l.LOGTHIS("fout bij verwerken studenten mutaties: " & ex.Message)
         End Try
-        LastMutatieDatumCheckedStudent = CheckDate(EersteMutatieDatumStudent)
-        ini.WriteString("Check", "last_check_student", LastMutatieDatumCheckedStudent.ToString("yyyy-MM-dd HH:mm:ss"))
 
-        'groepsmutaties verwerken
-        Dim EersteMutatieDatumGroep As Date = New Date(2099, 8, 1)
-        frmMain.tsCurrentState.Text = "Checking groeps mutaties"
+
         Try
+            ' Dim OudsteMutatieDatumGroep As Date = New Date(2000, 8, 1)
+            'groepsmutaties verwerken
+            frmMain.tsCurrentState.Text = "Groeps"
             Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlGroepMutaties(Last_check_Date("last_check_groep")))
-            Dim rdCount As OracleDataReader = dbOsiris.oracleQueryUitvoeren(sqlCountGroepsMutaties(Last_check_Date("last_check_groep")))
-
-            If Not IsNothing(rd) Then
-                If rd.HasRows Then
-                    If i.Stoppen = True Then Exit Function
-                    'aantal opvragen
-                    rdCount.Read()
-                    Dim max As Long = dbOsiris.oraSafeGetDecimal(rdCount, "aantal")
-                    Dim Counter As Long = 0
-                    frmMain.pbMutaties.Maximum = max
-                    frmMain.pbMutaties.Value = Counter
-                    frmMain.tsCurrentState.Text = "Working"
-                    frmMain.tsAutoVerwerkenActie.Text = "Groepsmutaties " & max
-                    frmMain.pbMutaties.Visible = True
-
-                    While rd.Read
-                        sStudentNummer = dbOsiris.oraSafeGetDecimal(rd, "studentnummer")
-                        mutatieDatum = dbOsiris.oraGetSafeDate(rd, "mutatie_datum")
-                        If mutatieDatum < EersteMutatieDatumGroep Then
-                            EersteMutatieDatumGroep = mutatieDatum   'opslaan wat de eerste mutatiedatum is voor toekomstige mutaties
-                        End If
-
-                        If GetStudentsOsiris(sStudentNummer) = True Then
-                            dictOsirisStudentenKeyStudentNr(sStudentNummer).ChangeUserInOO()
-                            l.LOGTHIS("Groepsmutatie verwerkt voor student : " & sStudentNummer, 10)
-                        End If
-
-                        Counter += 1
-                        frmMain.pbMutaties.Value = Counter
-                        Application.DoEvents()
-                    End While
-                    frmMain.pbMutaties.Visible = False
-                End If
-            End If
+            VerwerkItems(rd, "last_check_groep")
         Catch ex As Exception
-            l.LOGTHIS("Fout bij verwerken groepsmutatie: " & ex.Message, 50)
+            l.LOGTHIS("fout bij verwerken groeps mutaties: " & ex.Message)
         End Try
-        LastMutatieDatumCheckedGroep = CheckDate(EersteMutatieDatumGroep)
-        ini.WriteString("Check", "last_check_groep", LastMutatieDatumCheckedGroep.ToString("yyyy-MM-dd HH:mm:ss"))
 
-        'opleidingsmutaties verwerken
-        Dim EersteMutatieDatumOpleiding As Date = New Date(2099, 8, 1)
-        frmMain.tsCurrentState.Text = "Checking opleidingen mutaties"
         Try
+            'opleidingsmutaties verwerken
+            frmMain.tsCurrentState.Text = "Opleiding"
             Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlOpleidingMutaties(Last_check_Date("last_check_opleiding")))
-            If Not IsNothing(rd) Then
-                If rd.HasRows Then
-                    Dim rdCOunt As OracleDataReader = rd
-                    Dim lCount As Long = 0
-                    While rdCount.Read
-                        lCount += 1
-                    End While
-                    Dim max As Long = lCount
-                    Dim Counter As Long = 0
-                    frmMain.pbMutaties.Maximum = max
-                    frmMain.pbMutaties.Value = Counter
-                    frmMain.tsCurrentState.Text = "Working"
-                    frmMain.tsAutoVerwerkenActie.Text = "Opleidings mutaties " & max
-                    frmMain.pbMutaties.Visible = True
-
-                    While rd.Read
-                        If i.Stoppen = True Then Exit Function
-                        sStudentNummer = dbOsiris.oraSafeGetDecimal(rd, "studentnummer")
-                        mutatieDatum = dbOsiris.oraGetSafeDate(rd, "mutatie_datum")
-                        mutatieDatum = New Date(mutatieDatum.Year, mutatieDatum.Month, mutatieDatum.Day, mutatieDatum.Hour, mutatieDatum.Minute, mutatieDatum.Second)
-                        If mutatieDatum < EersteMutatieDatumOpleiding Then
-                            EersteMutatieDatumOpleiding = mutatieDatum   'opslaan wat de eerste mutatiedatum is voor toekomstige mutaties
-                        End If
-
-                        If GetStudentsOsiris(sStudentNummer) = True Then
-                            dictOsirisStudentenKeyStudentNr(sStudentNummer).ChangeUserInOO()
-                            l.LOGTHIS("Opleidingsmutatie verwerkt voor student : " & sStudentNummer, 10)
-                        End If
-
-                    End While
-                End If
-            End If
+            VerwerkItems(rd, "last_check_opleiding")
         Catch ex As Exception
-            l.LOGTHIS("Fout bij verwerken OpleidingsMutatie: " & ex.Message, 50)
+            l.LOGTHIS("fout bij verwerken opleidings mutaties: " & ex.Message)
         End Try
 
         'verwerken mutaties die in de middleware staan (geplande groepsdeelnames en geplande opleidingen)
         'opvragen mutaties 
         frmMain.tsCurrentState.Text = "Geplande mutaties checken"
-
         GeplandeMutatiesControleren()
 
 
 
 
 
-        LastMutatieDatumCheckedOpleiding = CheckDate(EersteMutatieDatumOpleiding)
+        ' LastMutatieDatumCheckedOpleiding = CheckDate(EersteMutatieDatumOpleiding)
 
         'tijd wegschrijven
 
@@ -992,26 +904,111 @@ Public Class cInstellingen
 
     End Function
 
+    Private Function Save_check_date(sitem As String, waarde As Date) As Boolean
+        Dim cmd As New OleDb.OleDbCommand
+        cmd.CommandType = CommandType.StoredProcedure
+        cmd.CommandText = "koppel.db_oo.update_check_log"
+
+        With cmd.Parameters
+            .AddWithValue("@omgeving", "productie")
+            .AddWithValue("@tabel", sitem)
+            .AddWithValue("@last_check", waarde)
+        End With
+        If dbMiddleWare.sqlCheckConnectionState = True Then
+            Try
+                cmd.Connection = dbMiddleWare.conSQL
+                cmd.ExecuteNonQuery()
+                Application.DoEvents()
+                Return True
+            Catch ex As Exception
+                Return False
+            End Try
+        End If
+
+
+    End Function
     Private Function Last_check_Date(sItem As String) As Date
         'functie haalt datum uit ini file met vast format yyyy-mm-dd HH24:MI
         'geeft huidige datum als deze niet aanwezig is
 
-        Dim dCheck As Date
+        Dim dCheck As Date = Now.Date
         Dim sDate As String = ini.GetString("Check", sItem, "")
-
-        If sDate = "" Then
-            dCheck = Now.Date()
-        Else
-            'format er uit halen is YYYY-MM-DD HH24:MI
-            Dim jaar As Integer = CInt(Left(sDate, 4))
-            Dim maand As Integer = CInt(Mid(sDate, 6, 2))
-            Dim dag As Integer = CInt(Mid(sDate, 9, 2))
-            Dim UUr As Integer = CInt(Mid(sDate, 12, 2))
-            Dim minuut As Integer = CInt(Mid(sDate, 15, 2))
-            Dim seconden As Integer = CInt(Mid(sDate, 18, 2))
-            dCheck = New Date(jaar, maand, dag, UUr, minuut, seconden)
+        Dim rd As OleDbDataReader = dbMiddleWare.sqlQueryUitvoeren("Select last_check from koppel.db_oo.last_check_log where tabel='" & sItem & "'")
+        If rd.HasRows Then
+            rd.Read()
+            dCheck = rd.GetDateTime(0)
         End If
+
         Return dCheck
+    End Function
+
+    Function VerwerkItems(rd As OracleDataReader, item As String) As Boolean
+        Dim sStudentNummer As String = ""
+        Dim mutatiedatum As Date
+        Dim OudsteMutatieDatum As New Date(2000, 1, 1)
+
+        If Not IsNothing(rd) Then
+            If rd.HasRows Then
+                'aantal rows opvragen
+                Dim rdCount As OracleDataReader = Nothing
+                Select Case item
+                    Case "last_check_student"
+                        rdCount = dbOsiris.oracleQueryUitvoeren(SqlCountStudentMutaties(Last_check_Date(item)))
+                    Case "last_check_groep"
+                        rdCount = dbOsiris.oracleQueryUitvoeren(SqlCountGroepMutaties(Last_check_Date(item)))
+                    Case "last_check_opleiding"
+                        rdCount = dbOsiris.oracleQueryUitvoeren(sqlCountOpleidingsMutaties(Last_check_Date(item)))
+                End Select
+
+                rdCount.Read()
+                Dim max As Long = dbOsiris.oraSafeGetDecimal(rdCount, "aantal")
+                Dim Counter As Long = 0
+                frmMain.pbMutaties.Maximum = max
+                frmMain.pbMutaties.Value = Counter
+                frmMain.tsAutoVerwerkenActie.Text = max & Replace(item, "last_check_", "")
+
+                While rd.Read
+                    If i.Stoppen = True Then Exit Function
+                    sStudentNummer = dbOsiris.oraSafeGetDecimal(rd, "studentnummer")
+                    mutatiedatum = dbOsiris.oraGetSafeDate(rd, "mutatie_datum")
+                    If mutatiedatum > OudsteMutatieDatum Then
+                        OudsteMutatieDatum = mutatiedatum   'opslaan wat de eerste mutatiedatum is voor toekomstige mutaties
+                    End If
+
+                    GetStudentsOsiris(sStudentNummer)
+                    If dictOsirisStudentenKeyStudentNr.ContainsKey(sStudentNummer) Then
+                        dictOsirisStudentenKeyStudentNr(sStudentNummer).ChangeUserInOO()
+                    End If
+
+                    l.LOGTHIS(item & " mutatie verwerkt: " & sStudentNummer, 10)
+                    Counter += 1
+                    frmMain.pbMutaties.Value = Counter
+                    If (Counter Mod 10 = 0) Then
+                        'verwerkte mutatiedatum opslaan
+                        Select Case (item)
+                            Case "last_check_student"
+                                LastMutatieDatumCheckedStudent = CheckDate(OudsteMutatieDatum)
+                                Save_check_date(item, LastMutatieDatumCheckedStudent)
+                            Case "last_check_groep"
+                                LastMutatieDatumCheckedGroep = CheckDate(OudsteMutatieDatum)
+                                Save_check_date(item, LastMutatieDatumCheckedGroep)
+                            Case "last_check_opleiding"
+                                LastMutatieDatumCheckedOpleiding = CheckDate(OudsteMutatieDatum)
+                                Save_check_date(item, LastMutatieDatumCheckedOpleiding)
+                        End Select
+
+                    End If
+                    Application.DoEvents()
+                    frmMain.tsAutoVerwerkenActie.Text = Counter & "/" & max & " mutaties"
+                    Application.DoEvents()
+                    If Counter > 50 Then
+                        Return True
+                    End If
+
+                End While
+            End If
+        End If
+        Return True
     End Function
 
     Private Function CheckDate(d2Check As Date) As Date

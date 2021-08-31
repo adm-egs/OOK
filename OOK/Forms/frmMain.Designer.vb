@@ -46,6 +46,10 @@ Partial Class frmMain
         Me.Label6 = New System.Windows.Forms.Label()
         Me.Label5 = New System.Windows.Forms.Label()
         Me.btnStuurStudentNaarOO = New System.Windows.Forms.Button()
+        Me.TabPage4 = New System.Windows.Forms.TabPage()
+        Me.Label12 = New System.Windows.Forms.Label()
+        Me.txtLetterCode = New System.Windows.Forms.TextBox()
+        Me.btnMedewerker2OO = New System.Windows.Forms.Button()
         Me.Label4 = New System.Windows.Forms.Label()
         Me.txtStudentNummer = New System.Windows.Forms.TextBox()
         Me.txtLog = New System.Windows.Forms.TextBox()
@@ -66,16 +70,12 @@ Partial Class frmMain
         Me.timTimerCheck = New System.Windows.Forms.Timer(Me.components)
         Me.chkAutomatischChecken = New System.Windows.Forms.CheckBox()
         Me.timStoppen = New System.Windows.Forms.Timer(Me.components)
-        Me.TabPage4 = New System.Windows.Forms.TabPage()
-        Me.btnMedewerker2OO = New System.Windows.Forms.Button()
-        Me.txtLetterCode = New System.Windows.Forms.TextBox()
-        Me.Label12 = New System.Windows.Forms.Label()
         Me.TabControl1.SuspendLayout()
         Me.TabPage1.SuspendLayout()
         Me.TabPage2.SuspendLayout()
         Me.TabPage3.SuspendLayout()
-        Me.frmMainStatusStrip.SuspendLayout()
         Me.TabPage4.SuspendLayout()
+        Me.frmMainStatusStrip.SuspendLayout()
         Me.SuspendLayout()
         '
         'TabControl1
@@ -312,6 +312,43 @@ Partial Class frmMain
         Me.btnStuurStudentNaarOO.TabIndex = 1
         Me.btnStuurStudentNaarOO.UseVisualStyleBackColor = True
         '
+        'TabPage4
+        '
+        Me.TabPage4.Controls.Add(Me.Label12)
+        Me.TabPage4.Controls.Add(Me.txtLetterCode)
+        Me.TabPage4.Controls.Add(Me.btnMedewerker2OO)
+        Me.TabPage4.Location = New System.Drawing.Point(4, 24)
+        Me.TabPage4.Name = "TabPage4"
+        Me.TabPage4.Padding = New System.Windows.Forms.Padding(3)
+        Me.TabPage4.Size = New System.Drawing.Size(391, 289)
+        Me.TabPage4.TabIndex = 3
+        Me.TabPage4.Text = "Medewerkers"
+        Me.TabPage4.UseVisualStyleBackColor = True
+        '
+        'Label12
+        '
+        Me.Label12.AutoSize = True
+        Me.Label12.Location = New System.Drawing.Point(34, 59)
+        Me.Label12.Name = "Label12"
+        Me.Label12.Size = New System.Drawing.Size(155, 15)
+        Me.Label12.TabIndex = 2
+        Me.Label12.Text = "Medewerker naar OO sturen"
+        '
+        'txtLetterCode
+        '
+        Me.txtLetterCode.Location = New System.Drawing.Point(108, 31)
+        Me.txtLetterCode.Name = "txtLetterCode"
+        Me.txtLetterCode.Size = New System.Drawing.Size(80, 23)
+        Me.txtLetterCode.TabIndex = 1
+        '
+        'btnMedewerker2OO
+        '
+        Me.btnMedewerker2OO.Location = New System.Drawing.Point(37, 31)
+        Me.btnMedewerker2OO.Name = "btnMedewerker2OO"
+        Me.btnMedewerker2OO.Size = New System.Drawing.Size(56, 24)
+        Me.btnMedewerker2OO.TabIndex = 0
+        Me.btnMedewerker2OO.UseVisualStyleBackColor = True
+        '
         'Label4
         '
         Me.Label4.AutoSize = True
@@ -357,14 +394,14 @@ Partial Class frmMain
         '
         Me.tsConnectieMiddleware.AutoSize = False
         Me.tsConnectieMiddleware.Name = "tsConnectieMiddleware"
-        Me.tsConnectieMiddleware.Size = New System.Drawing.Size(152, 17)
+        Me.tsConnectieMiddleware.Size = New System.Drawing.Size(145, 17)
         Me.tsConnectieMiddleware.Text = "Middleware niet verbonden"
         '
         'tsStudentNummer
         '
         Me.tsStudentNummer.AutoSize = False
         Me.tsStudentNummer.Name = "tsStudentNummer"
-        Me.tsStudentNummer.Size = New System.Drawing.Size(82, 17)
+        Me.tsStudentNummer.Size = New System.Drawing.Size(70, 17)
         Me.tsStudentNummer.Text = "Student nr"
         '
         'tsCurrentState
@@ -462,43 +499,6 @@ Partial Class frmMain
         'timStoppen
         '
         '
-        'TabPage4
-        '
-        Me.TabPage4.Controls.Add(Me.Label12)
-        Me.TabPage4.Controls.Add(Me.txtLetterCode)
-        Me.TabPage4.Controls.Add(Me.btnMedewerker2OO)
-        Me.TabPage4.Location = New System.Drawing.Point(4, 24)
-        Me.TabPage4.Name = "TabPage4"
-        Me.TabPage4.Padding = New System.Windows.Forms.Padding(3)
-        Me.TabPage4.Size = New System.Drawing.Size(391, 289)
-        Me.TabPage4.TabIndex = 3
-        Me.TabPage4.Text = "Medewerkers"
-        Me.TabPage4.UseVisualStyleBackColor = True
-        '
-        'btnMedewerker2OO
-        '
-        Me.btnMedewerker2OO.Location = New System.Drawing.Point(37, 31)
-        Me.btnMedewerker2OO.Name = "btnMedewerker2OO"
-        Me.btnMedewerker2OO.Size = New System.Drawing.Size(56, 24)
-        Me.btnMedewerker2OO.TabIndex = 0
-        Me.btnMedewerker2OO.UseVisualStyleBackColor = True
-        '
-        'txtLetterCode
-        '
-        Me.txtLetterCode.Location = New System.Drawing.Point(108, 31)
-        Me.txtLetterCode.Name = "txtLetterCode"
-        Me.txtLetterCode.Size = New System.Drawing.Size(80, 23)
-        Me.txtLetterCode.TabIndex = 1
-        '
-        'Label12
-        '
-        Me.Label12.AutoSize = True
-        Me.Label12.Location = New System.Drawing.Point(34, 59)
-        Me.Label12.Name = "Label12"
-        Me.Label12.Size = New System.Drawing.Size(155, 15)
-        Me.Label12.TabIndex = 2
-        Me.Label12.Text = "Medewerker naar OO sturen"
-        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
@@ -524,10 +524,10 @@ Partial Class frmMain
         Me.TabPage2.PerformLayout()
         Me.TabPage3.ResumeLayout(False)
         Me.TabPage3.PerformLayout()
-        Me.frmMainStatusStrip.ResumeLayout(False)
-        Me.frmMainStatusStrip.PerformLayout()
         Me.TabPage4.ResumeLayout(False)
         Me.TabPage4.PerformLayout()
+        Me.frmMainStatusStrip.ResumeLayout(False)
+        Me.frmMainStatusStrip.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
