@@ -95,6 +95,7 @@ Public Class cDbUtils
             Try
                 'cmd = New OdbcCommand(sql, Con) 'OleDbCommand(sql, Con)
                 cmd = New OracleCommand(sql, conOra)
+                ' l.LOGTHIS(sql, 1)
                 reader = cmd.ExecuteReader
                 Return reader
 

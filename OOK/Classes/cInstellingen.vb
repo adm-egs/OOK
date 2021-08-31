@@ -233,7 +233,12 @@ Public Class cInstellingen
             Return _lastMutatieDatumCheckedStudent
         End Get
         Set(value As Date)
-            _lastMutatieDatumCheckedStudent = value
+            If value < _lastMutatieDatumCheckedStudent Then
+                Application.DoEvents()
+            Else
+                _lastMutatieDatumCheckedStudent = value
+            End If
+
         End Set
     End Property
 
@@ -254,7 +259,12 @@ Public Class cInstellingen
             Return _lastMutatieDatumCheckedGroep
         End Get
         Set(value As Date)
-            _lastMutatieDatumCheckedGroep = value
+            If value < _lastMutatieDatumCheckedGroep Then
+                Application.DoEvents()
+            Else
+                _lastMutatieDatumCheckedGroep = value
+            End If
+            ' _lastMutatieDatumCheckedGroep = value
         End Set
     End Property
 
@@ -263,7 +273,12 @@ Public Class cInstellingen
             Return _lastMutatieDatumCheckedOpleiding
         End Get
         Set(value As Date)
-            _lastMutatieDatumCheckedOpleiding = value
+            If value < _lastMutatieDatumCheckedOpleiding Then
+                Application.DoEvents()
+            Else
+                _lastMutatieDatumCheckedOpleiding = value
+            End If
+
         End Set
     End Property
 
@@ -866,7 +881,7 @@ Public Class cInstellingen
         Try
             ' Dim OudsteMutatieDatumGroep As Date = New Date(2000, 8, 1)
             'groepsmutaties verwerken
-            frmMain.tsCurrentState.Text = "Groeps"
+            frmMain.tsCurrentState.Text = "Groepen"
             Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlGroepMutaties(Last_check_Date("last_check_groep")))
             VerwerkItems(rd, "last_check_groep")
         Catch ex As Exception
@@ -895,7 +910,7 @@ Public Class cInstellingen
 
         'tijd wegschrijven
 
-        ini.WriteString("Check", "last_check_opleiding", Now.ToString("yyyy-MM-dd HH:mm:ss"))
+        ' ini.WriteString("Check", "last_check_opleiding", Now.ToString("yyyy-MM-dd HH:mm:ss"))
 
         frmMain.tsCurrentState.Text = "Ready for action"
         frmMain.tsLastCheckTime.Text = Now()
@@ -923,6 +938,8 @@ Public Class cInstellingen
             Catch ex As Exception
                 Return False
             End Try
+        Else
+            Return False
         End If
 
 
@@ -932,7 +949,7 @@ Public Class cInstellingen
         'geeft huidige datum als deze niet aanwezig is
 
         Dim dCheck As Date = Now.Date
-        Dim sDate As String = ini.GetString("Check", sItem, "")
+        'Dim sDate As String = ini.GetString("Check", sItem, "")
         Dim rd As OleDbDataReader = dbMiddleWare.sqlQueryUitvoeren("Select last_check from koppel.db_oo.last_check_log where tabel='" & sItem & "'")
         If rd.HasRows Then
             rd.Read()
@@ -1002,11 +1019,35 @@ Public Class cInstellingen
                     frmMain.tsAutoVerwerkenActie.Text = Counter & "/" & max & " mutaties"
                     Application.DoEvents()
                     If Counter > 50 Then
+                        Select Case (item)
+                            Case "last_check_student"
+                                LastMutatieDatumCheckedStudent = CheckDate(OudsteMutatieDatum)
+                                Save_check_date(item, LastMutatieDatumCheckedStudent)
+                            Case "last_check_groep"
+                                LastMutatieDatumCheckedGroep = CheckDate(OudsteMutatieDatum)
+                                Save_check_date(item, LastMutatieDatumCheckedGroep)
+                            Case "last_check_opleiding"
+                                LastMutatieDatumCheckedOpleiding = CheckDate(OudsteMutatieDatum)
+                                Save_check_date(item, LastMutatieDatumCheckedOpleiding)
+                        End Select
                         Return True
                     End If
 
                 End While
+                Select Case (item)
+                    Case "last_check_student"
+                        LastMutatieDatumCheckedStudent = CheckDate(OudsteMutatieDatum)
+                        Save_check_date(item, LastMutatieDatumCheckedStudent)
+                    Case "last_check_groep"
+                        LastMutatieDatumCheckedGroep = CheckDate(OudsteMutatieDatum)
+                        Save_check_date(item, LastMutatieDatumCheckedGroep)
+                    Case "last_check_opleiding"
+                        LastMutatieDatumCheckedOpleiding = CheckDate(OudsteMutatieDatum)
+                        Save_check_date(item, LastMutatieDatumCheckedOpleiding)
+                End Select
             End If
+        Else
+            Return True
         End If
         Return True
     End Function
