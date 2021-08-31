@@ -356,5 +356,22 @@ next_rec:
         End If
     End Sub
 
+    Private Sub btnMedewerker2OO_Click(sender As Object, e As EventArgs) Handles btnMedewerker2OO.Click
+        Dim sQuery As String = "Select * from  [Koppel].[db_umra_2021].[medewerkers] where personeelscode like '" & Me.txtLetterCode.Text & "'"
+        Dim rd As OleDbDataReader = dbMiddleWare.sqlQueryUitvoeren(sQuery)
+        If IsNothing(rd) Then
+            MsgBox("niet gevonden")
+            Exit Sub
+        End If
 
+        If rd.HasRows = False Then
+            MsgBox("niet gevonden")
+            Exit Sub
+        End If
+
+        l.LOGTHIS("medewerker " & Me.txtLetterCode.Text & " bestaat in UMRA", 2)
+        'controleren of medewerker in OO bestaat
+
+
+    End Sub
 End Class

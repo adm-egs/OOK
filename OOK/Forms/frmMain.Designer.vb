@@ -56,6 +56,8 @@ Partial Class frmMain
         Me.tsCurrentState = New System.Windows.Forms.ToolStripStatusLabel()
         Me.tsLastCheckTime = New System.Windows.Forms.ToolStripStatusLabel()
         Me.tsAliveTime = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.tsAutoVerwerkenActie = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.pbMutaties = New System.Windows.Forms.ToolStripProgressBar()
         Me.btnCheckBeschikbareMutatiesOsiris = New System.Windows.Forms.Button()
         Me.Label7 = New System.Windows.Forms.Label()
         Me.chkUitgebreideLogging = New System.Windows.Forms.CheckBox()
@@ -64,13 +66,16 @@ Partial Class frmMain
         Me.timTimerCheck = New System.Windows.Forms.Timer(Me.components)
         Me.chkAutomatischChecken = New System.Windows.Forms.CheckBox()
         Me.timStoppen = New System.Windows.Forms.Timer(Me.components)
-        Me.pbMutaties = New System.Windows.Forms.ToolStripProgressBar()
-        Me.ToolStripStatusLabel1 = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.TabPage4 = New System.Windows.Forms.TabPage()
+        Me.btnMedewerker2OO = New System.Windows.Forms.Button()
+        Me.txtLetterCode = New System.Windows.Forms.TextBox()
+        Me.Label12 = New System.Windows.Forms.Label()
         Me.TabControl1.SuspendLayout()
         Me.TabPage1.SuspendLayout()
         Me.TabPage2.SuspendLayout()
         Me.TabPage3.SuspendLayout()
         Me.frmMainStatusStrip.SuspendLayout()
+        Me.TabPage4.SuspendLayout()
         Me.SuspendLayout()
         '
         'TabControl1
@@ -78,6 +83,7 @@ Partial Class frmMain
         Me.TabControl1.Controls.Add(Me.TabPage1)
         Me.TabControl1.Controls.Add(Me.TabPage2)
         Me.TabControl1.Controls.Add(Me.TabPage3)
+        Me.TabControl1.Controls.Add(Me.TabPage4)
         Me.TabControl1.Location = New System.Drawing.Point(12, 108)
         Me.TabControl1.Name = "TabControl1"
         Me.TabControl1.SelectedIndex = 0
@@ -334,7 +340,7 @@ Partial Class frmMain
         '
         'frmMainStatusStrip
         '
-        Me.frmMainStatusStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tsConnectieOsiris, Me.tsConnectieMiddleware, Me.tsStudentNummer, Me.tsCurrentState, Me.tsLastCheckTime, Me.tsAliveTime, Me.ToolStripStatusLabel1, Me.pbMutaties})
+        Me.frmMainStatusStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.tsConnectieOsiris, Me.tsConnectieMiddleware, Me.tsStudentNummer, Me.tsCurrentState, Me.tsLastCheckTime, Me.tsAliveTime, Me.tsAutoVerwerkenActie, Me.pbMutaties})
         Me.frmMainStatusStrip.Location = New System.Drawing.Point(0, 428)
         Me.frmMainStatusStrip.Name = "frmMainStatusStrip"
         Me.frmMainStatusStrip.Size = New System.Drawing.Size(842, 22)
@@ -382,6 +388,17 @@ Partial Class frmMain
         Me.tsAliveTime.Name = "tsAliveTime"
         Me.tsAliveTime.Size = New System.Drawing.Size(34, 17)
         Me.tsAliveTime.Text = "00:00"
+        '
+        'tsAutoVerwerkenActie
+        '
+        Me.tsAutoVerwerkenActie.Name = "tsAutoVerwerkenActie"
+        Me.tsAutoVerwerkenActie.Size = New System.Drawing.Size(17, 17)
+        Me.tsAutoVerwerkenActie.Text = "--"
+        '
+        'pbMutaties
+        '
+        Me.pbMutaties.Name = "pbMutaties"
+        Me.pbMutaties.Size = New System.Drawing.Size(100, 16)
         '
         'btnCheckBeschikbareMutatiesOsiris
         '
@@ -445,16 +462,42 @@ Partial Class frmMain
         'timStoppen
         '
         '
-        'pbMutaties
+        'TabPage4
         '
-        Me.pbMutaties.Name = "pbMutaties"
-        Me.pbMutaties.Size = New System.Drawing.Size(100, 16)
+        Me.TabPage4.Controls.Add(Me.Label12)
+        Me.TabPage4.Controls.Add(Me.txtLetterCode)
+        Me.TabPage4.Controls.Add(Me.btnMedewerker2OO)
+        Me.TabPage4.Location = New System.Drawing.Point(4, 24)
+        Me.TabPage4.Name = "TabPage4"
+        Me.TabPage4.Padding = New System.Windows.Forms.Padding(3)
+        Me.TabPage4.Size = New System.Drawing.Size(391, 289)
+        Me.TabPage4.TabIndex = 3
+        Me.TabPage4.Text = "Medewerkers"
+        Me.TabPage4.UseVisualStyleBackColor = True
         '
-        'ToolStripStatusLabel1
+        'btnMedewerker2OO
         '
-        Me.ToolStripStatusLabel1.Name = "ToolStripStatusLabel1"
-        Me.ToolStripStatusLabel1.Size = New System.Drawing.Size(74, 17)
-        Me.ToolStripStatusLabel1.Text = "Mutaties2Do"
+        Me.btnMedewerker2OO.Location = New System.Drawing.Point(37, 31)
+        Me.btnMedewerker2OO.Name = "btnMedewerker2OO"
+        Me.btnMedewerker2OO.Size = New System.Drawing.Size(56, 24)
+        Me.btnMedewerker2OO.TabIndex = 0
+        Me.btnMedewerker2OO.UseVisualStyleBackColor = True
+        '
+        'txtLetterCode
+        '
+        Me.txtLetterCode.Location = New System.Drawing.Point(108, 31)
+        Me.txtLetterCode.Name = "txtLetterCode"
+        Me.txtLetterCode.Size = New System.Drawing.Size(80, 23)
+        Me.txtLetterCode.TabIndex = 1
+        '
+        'Label12
+        '
+        Me.Label12.AutoSize = True
+        Me.Label12.Location = New System.Drawing.Point(34, 59)
+        Me.Label12.Name = "Label12"
+        Me.Label12.Size = New System.Drawing.Size(155, 15)
+        Me.Label12.TabIndex = 2
+        Me.Label12.Text = "Medewerker naar OO sturen"
         '
         'frmMain
         '
@@ -483,6 +526,8 @@ Partial Class frmMain
         Me.TabPage3.PerformLayout()
         Me.frmMainStatusStrip.ResumeLayout(False)
         Me.frmMainStatusStrip.PerformLayout()
+        Me.TabPage4.ResumeLayout(False)
+        Me.TabPage4.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -529,6 +574,10 @@ Partial Class frmMain
     Friend WithEvents btnInlogOsiris As Button
     Friend WithEvents timStoppen As Timer
     Friend WithEvents tsAliveTime As ToolStripStatusLabel
-    Friend WithEvents ToolStripStatusLabel1 As ToolStripStatusLabel
+    Friend WithEvents tsAutoVerwerkenActie As ToolStripStatusLabel
     Friend WithEvents pbMutaties As ToolStripProgressBar
+    Friend WithEvents TabPage4 As TabPage
+    Friend WithEvents txtLetterCode As TextBox
+    Friend WithEvents btnMedewerker2OO As Button
+    Friend WithEvents Label12 As Label
 End Class

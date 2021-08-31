@@ -304,7 +304,6 @@ Public Class cStudentBasis
                     Dim ResponseError As JValue = json.SelectToken("error")
                     If CBool(ResponseError.Value) = False Then
                         l.LOGTHIS("Student aan team gekoppeld : " & t.Code, 1)
-
                     Else
                         l.LOGTHIS("Student aan team koppelen niet gelukt :" & t.Code, 1)
                         Return False
