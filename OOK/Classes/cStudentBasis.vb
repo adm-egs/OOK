@@ -126,7 +126,7 @@ Public Class cStudentBasis
                     Catch ex As Exception
 
                     End Try
-                   
+
                     ChangeUserInOO(False)   'update user
 
                 End If
@@ -477,7 +477,13 @@ Public Class cStudentBasis
 
 
         Else
-            dAlleGroepen.Add(clsGroep.Code, clsGroep)
+            If dAlleGroepen.ContainsKey(clsGroep.Code) Then
+                dAlleGroepen.Remove(clsGroep.Code)
+                dAlleGroepen.Add(clsGroep.Code, clsGroep)
+            Else
+                dAlleGroepen.Add(clsGroep.Code, clsGroep)
+            End If
+
             Return True     'groep gevonden
         End If
 

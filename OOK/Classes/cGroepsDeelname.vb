@@ -24,7 +24,7 @@
             Return _groepsCode
         End Get
         Set(value As String)
-            _groepsCode = value
+            _groepsCode = UCase(value)
         End Set
     End Property
     Public Property GroepNaam As String

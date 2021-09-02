@@ -246,7 +246,7 @@ Public Class cInstellingen
     Public Property SqlStudentMutaties(datum As Date) As String
         Get
             Dim sHelp As String = _sqlStudentMutaties
-            sHelp = Strings.Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:ss"))
+            sHelp = Strings.Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:mm:ss"))
             Return sHelp
         End Get
         Set(value As String)
@@ -286,14 +286,14 @@ Public Class cInstellingen
         Get
 
             Dim sHelp As String = _sqlCountGroepsMutaties
-            sHelp = Strings.Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:ss"))
+            sHelp = Strings.Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:mm:ss"))
             Return sHelp
         End Get
     End Property
     Public Property SqlGroepMutaties(datum As Date) As String
         Get
             Dim sHelp As String = _sqlGroepMutaties
-            sHelp = Strings.Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:ss"))
+            sHelp = Strings.Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:mm:ss"))
             Return sHelp
         End Get
         Set(value As String)
@@ -304,7 +304,7 @@ Public Class cInstellingen
     Public Property SqlOpleidingMutaties(datum As Date) As String
         Get
             Dim sHelp As String = _sqlOpleidingMutaties
-            sHelp = Strings.Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:ss"))
+            sHelp = Strings.Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:mm:ss"))
             Return sHelp
         End Get
         Set(value As String)
@@ -325,7 +325,7 @@ Public Class cInstellingen
         Get
             Dim sHelp As String = _SqlCountStudentMutaties
 
-            sHelp = Strings.Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:ss"))
+            sHelp = Strings.Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:mm:ss"))
             Return sHelp
         End Get
 
@@ -334,7 +334,7 @@ Public Class cInstellingen
     Public ReadOnly Property sqlCountGroepsMutaties(datum As Date) As String
         Get
             Dim sHelp As String = _sqlCountGroepsMutaties
-            sHelp = Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:ss"))
+            sHelp = Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:mm:ss"))
             Return sHelp
 
         End Get
@@ -343,7 +343,7 @@ Public Class cInstellingen
     Public ReadOnly Property sqlCountOpleidingsMutaties(datum As Date) As String
         Get
             Dim sHelp As String = _sqlCountOpleidinsgMutaties
-            sHelp = Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:ss"))
+            sHelp = Replace(sHelp, "<datum>", datum.ToString("yyyy-MM-dd HH:mm:ss"))
             Return sHelp
 
         End Get
@@ -441,11 +441,11 @@ Public Class cInstellingen
             client.Timeout = -1
             request.Method = RestSharp.Method.POST
 
-            request.AddHeader("Content-Type", "application/x-www-form-urlencoded")
-            request.AddHeader("Cookie", "simplesaml=5e71be56aea3236f30ebca99590b2518")
+            '   request.AddHeader("Content-Type", "application/x-www-form-urlencoded")
+            ' request.AddHeader("Cookie", "simplesaml=5e71be56aea3236f30ebca99590b2518")
             'request.AddParameter("client_id", "3")
             request.AddParameter("client_id", i.ClientId)
-            'request.AddParameter("client_secret", "dsKmUa8bbNLxf8YgFoXnVn5LVYsWS666l70sd4ey")
+            '   request.AddParameter("client_secret", "dsKmUa8bbNLxf8YgFoXnVn5LVYsWS666l70sd4ey")
             request.AddParameter("client_secret", i.ClientSecret)
             request.AddParameter("grant_type", "client_credentials")
 
@@ -867,23 +867,28 @@ Public Class cInstellingen
         ' Dim mutatieDatum As Date
 
         'doe check
+        Application.UseWaitCursor = True
+
         Try
             ' Dim OudsteMutatieDatumStudent As Date = New Date(2000, 8, 1)
             'studentmutaties verwerken
-            frmMain.tsCurrentState.Text = "Studentent mutaties"
-            Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlStudentMutaties(Last_check_Date("last_check_student")))
-            VerwerkItems(rd, "last_check_student")
+            frmMain.tsCurrentState.Text = "Studentent"
+            Dim sql As String = SqlStudentMutaties(Last_check_Date("last_check_student"))
+            Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(sql)
+            VerwerkItems(rd, "last_check_student", frmMain.pbStudentMutaties)
         Catch ex As Exception
             l.LOGTHIS("fout bij verwerken studenten mutaties: " & ex.Message)
         End Try
-
 
         Try
             ' Dim OudsteMutatieDatumGroep As Date = New Date(2000, 8, 1)
             'groepsmutaties verwerken
             frmMain.tsCurrentState.Text = "Groepen"
-            Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlGroepMutaties(Last_check_Date("last_check_groep")))
-            VerwerkItems(rd, "last_check_groep")
+            Dim sql As String = SqlGroepMutaties(Last_check_Date("last_check_groep"))
+            frmMain.txtSQL.Text = sql
+            Application.DoEvents()
+            Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(sql)
+            VerwerkItems(rd, "last_check_groep", frmMain.pbGroepsMutaties)
         Catch ex As Exception
             l.LOGTHIS("fout bij verwerken groeps mutaties: " & ex.Message)
         End Try
@@ -892,7 +897,7 @@ Public Class cInstellingen
             'opleidingsmutaties verwerken
             frmMain.tsCurrentState.Text = "Opleiding"
             Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlOpleidingMutaties(Last_check_Date("last_check_opleiding")))
-            VerwerkItems(rd, "last_check_opleiding")
+            VerwerkItems(rd, "last_check_opleiding", frmMain.pbOpleidingsMutaties)
         Catch ex As Exception
             l.LOGTHIS("fout bij verwerken opleidings mutaties: " & ex.Message)
         End Try
@@ -915,7 +920,7 @@ Public Class cInstellingen
         frmMain.tsCurrentState.Text = "Ready for action"
         frmMain.tsLastCheckTime.Text = Now()
         Return True
-
+        Application.UseWaitCursor = False
 
     End Function
 
@@ -959,7 +964,7 @@ Public Class cInstellingen
         Return dCheck
     End Function
 
-    Function VerwerkItems(rd As OracleDataReader, item As String) As Boolean
+    Function VerwerkItems(rd As OracleDataReader, item As String, pb As ProgressBar) As Boolean
         Dim sStudentNummer As String = ""
         Dim mutatiedatum As Date
         Dim OudsteMutatieDatum As New Date(2000, 1, 1)
@@ -980,14 +985,18 @@ Public Class cInstellingen
                 rdCount.Read()
                 Dim max As Long = dbOsiris.oraSafeGetDecimal(rdCount, "aantal")
                 Dim Counter As Long = 0
-                frmMain.pbMutaties.Maximum = max
-                frmMain.pbMutaties.Value = Counter
+                pb.Maximum = max
+                pb.Value = 0
+
                 frmMain.tsAutoVerwerkenActie.Text = max & Replace(item, "last_check_", "")
 
                 While rd.Read
                     If i.Stoppen = True Then Exit Function
                     sStudentNummer = dbOsiris.oraSafeGetDecimal(rd, "studentnummer")
                     mutatiedatum = dbOsiris.oraGetSafeDate(rd, "mutatie_datum")
+                    frmMain.lblStudentMutatieDatum.Text = mutatiedatum
+                    Application.DoEvents()
+
                     If mutatiedatum > OudsteMutatieDatum Then
                         OudsteMutatieDatum = mutatiedatum   'opslaan wat de eerste mutatiedatum is voor toekomstige mutaties
                     End If
@@ -997,9 +1006,22 @@ Public Class cInstellingen
                         dictOsirisStudentenKeyStudentNr(sStudentNummer).ChangeUserInOO()
                     End If
 
+                    LastMutatieDatumCheckedStudent = CheckDate(OudsteMutatieDatum)
+                    Save_check_date(item, LastMutatieDatumCheckedStudent)
+
+                    'Select Case (item)
+                    '    Case "last_check_student"
+                    '        frmMain.lblStudentDatumLaatste.Text = mutatiedatum
+
+                    '    Case "last_check_groep"
+
+                    '    Case "last_check_opleiding"
+
+                    'End Select
+
                     l.LOGTHIS(item & " mutatie verwerkt: " & sStudentNummer, 10)
                     Counter += 1
-                    frmMain.pbMutaties.Value = Counter
+                    pb.Value = Counter
                     If (Counter Mod 10 = 0) Then
                         'verwerkte mutatiedatum opslaan
                         Select Case (item)
@@ -1013,8 +1035,8 @@ Public Class cInstellingen
                                 LastMutatieDatumCheckedOpleiding = CheckDate(OudsteMutatieDatum)
                                 Save_check_date(item, LastMutatieDatumCheckedOpleiding)
                         End Select
-
                     End If
+
                     Application.DoEvents()
                     frmMain.tsAutoVerwerkenActie.Text = Counter & "/" & max & " mutaties"
                     Application.DoEvents()
@@ -1162,4 +1184,106 @@ Public Class cInstellingen
 
     End Function
 
+#Region "Medewerkers"
+    Public Function GetMedewerkerClassUitOo(sLetterCode As String) As cMedewerker
+        'gegevens student uit OO opvragen
+        Dim request As New RestSharp.RestRequest()
+        Dim client As New RestSharp.RestClient(dURLS("StudentGet") & "?username=" & sLetterCode)
+        Dim response As RestSharp.RestResponse
+        Dim cMedewRetour As New cMedewerker
+
+        Try
+            i.GetToken()    'token opvragen
+            client.Timeout = -1
+            request.Method = RestSharp.Method.GET
+
+            request.AddHeader("Authorization", "Bearer " & i.AuthenticationToken)
+            response = client.Execute(request)
+
+            Dim json As JObject = JObject.Parse(response.Content)
+            Dim dataPage As JObject = json.SelectToken("data")
+            Dim dataUser As JArray = dataPage.SelectToken("data")
+            Dim UserCountInCurrentPage As Integer = dataUser.Count
+
+            Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, "Opvragen medewerker uit OO", sLetterCode, response.Content, response.StatusCode.ToString)
+            jsonLog.Write2database()
+
+            If dataUser.Count = 0 Then
+                cMedewRetour.BekendInOO = False
+                Return cMedewRetour
+            Else
+
+                cMedewRetour.BekendInOO = True
+            End If
+
+            For Each jUser In dataUser
+                'json object naar user overzetten
+                cMedewRetour.getUserData(jUser)
+                'Dim s As New cStudent
+                's.getUserData(jUser)    'velden invullen in object
+                'If Add2Personen = True Then
+                '    If dPersonen.ContainsKey(StudentNummer) Then
+                '        dPersonen.Remove(StudentNummer)
+                '    End If
+                '    dPersonen.Add(StudentNummer, Me)
+                'Else
+                '    Return Me
+                'End If
+
+            Next
+            Return cMedewRetour
+        Catch ex As Exception
+            Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, "Opvragen medewerker uit OO", sLetterCode, response.Content, response.StatusCode.ToString)
+            jsonLog.Gelukt = "N"
+            jsonLog.Write2database()
+
+
+            Return Nothing
+        End Try
+    End Function
+
+    Public Function CreateMedewerker(m As cMedewerker) As Long
+        Try
+
+            i.GetToken()    'token opvragen        '
+            Dim client As RestSharp.RestClient '  New RestSharp.RestClient(dURLS("StudentGet"))
+            Dim request As New RestSharp.RestRequest
+
+            'medewerker aanmaken
+            request.Method = RestSharp.Method.POST
+            client = New RestSharp.RestClient(dURLS("StudentGet"))
+
+            request.AddHeader("Authorization", "Bearer " & i.AuthenticationToken)
+            request.AddParameter("username", m.Username)
+            request.AddParameter("firstname", m.Firstname)
+            request.AddParameter("lastname", m.Lastname)
+            request.AddParameter("lastname_prefix", m.Lastname_prefix)
+            request.AddParameter("email", m.Code & "@mboutrecht.nl")
+            request.AddParameter("code", m.Code)
+            request.AddParameter("foreign_id", m.Code)
+            client.Timeout = -1
+
+            Dim response As RestSharp.RestResponse = client.Execute(request)
+
+            Dim jsonLog As New cJsonLogItem(request.Method.ToString, client.BaseUrl.ToString, "Aanmaken medewerker in OO", m.Code, response.Content, response.StatusCode.ToString)
+            jsonLog.Write2database()
+
+
+            If response.StatusCode <> Net.HttpStatusCode.OK Then
+                l.LOGTHIS("Request failed : " & response.StatusCode)
+                ' l.LOGTHIS("OOid=" & Me.OOid)
+                Return False
+            End If
+
+            Dim json As JObject = JObject.Parse(response.Content)
+            ' Dim dataUser As JArray = json.SelectToken("error")
+            'controleren of dit gelukt is
+        Catch ex As Exception
+            l.LOGTHIS("Fout bij create medewerker user: " & ex.Message)
+            Return False
+        End Try
+        Return True
+    End Function
+
+#End Region
 End Class

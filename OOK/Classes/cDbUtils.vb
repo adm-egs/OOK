@@ -257,7 +257,48 @@ Public Class cDbUtils
         End If
         Return Nothing
     End Function
+    Function sqlSafeGetString(rd As OleDbDataReader, veld As String) As String
 
+        Dim colindex As Integer = rd.GetOrdinal(veld)
+        If Not rd.IsDBNull(colindex) Then
+            Try
+                Return rd.GetString(colindex)
+            Catch ex As Exception
+                Dim sType As String = rd.GetFieldType(colindex).FullName
+                Select Case sType
+                    Case "System.Decimal"
+                        Dim sValue As Decimal = rd.GetDecimal(colindex)
+                        Return sValue.ToString
+                    Case "System.Int32"
+                        Dim sValue As System.Int32 = rd.GetInt32(colindex)
+                        Return CStr(sValue)
+                    Case Else
+                        l.LOGTHIS("Fout bij opvragen waarden van het type " & sType, 25)
+                        Return String.Empty
+                End Select
+            End Try
+
+        Else
+            Return String.Empty
+        End If
+
+    End Function
+
+    Function sqlSafeGetDecimal(rd As OleDbDataReader, veld As String) As Decimal
+
+        Dim colIndex As Integer = rd.GetOrdinal(veld)
+        If Not rd.IsDBNull(colIndex) Then
+            Try
+                Return CDec(rd.GetValue(colIndex))
+            Catch ex As Exception
+                Return rd.GetDecimal(colIndex)
+
+            End Try
+        Else
+            Return 0
+        End If
+
+    End Function
 #End Region
 #End Region
 

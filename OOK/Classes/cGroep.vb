@@ -18,7 +18,7 @@
             Return _Code
         End Get
         Set(value As String)
-            _Code = value
+            _Code = UCase(value)
         End Set
     End Property
 

@@ -1,9 +1,11 @@
 ﻿Imports System.Data.OleDb
 Imports System.IO
+Imports System
+Imports System.Windows.Forms
 
 Public Class frmMain
     Public Delegate Sub LogTekstDelegate(ByVal tekst As String)
-
+    Public pbStudentMutatiesVertikaal As New VerticalProgressBar
     Public Sub LogTekst(ByVal strTekst As String)
         'mogelijk maken dat Control wordt aangestuurd vanuit andere Thread ivm crossthread error
         If Me.txtLog.InvokeRequired Then
@@ -14,6 +16,17 @@ Public Class frmMain
             Me.txtLog.ScrollToCaret()
         End If
     End Sub
+
+    Public Class VerticalProgressBar
+        Inherits ProgressBar
+        Protected Overloads Overrides ReadOnly Property CreateParams() As CreateParams
+            Get
+                Dim cp As CreateParams = MyBase.CreateParams
+                cp.Style = cp.Style Or &H4
+                Return cp
+            End Get
+        End Property
+    End Class
     Private Sub frmMain_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
     End Sub
@@ -64,6 +77,13 @@ Public Class frmMain
 
             End Try
         End If
+
+
+        pbStudentMutatiesVertikaal.Left = Me.txtLog.Left + Me.txtLog.Width + 10
+        pbStudentMutatiesVertikaal.Top = 200
+        pbStudentMutatiesVertikaal.Width = 30
+        pbStudentMutatiesVertikaal.Visible = True
+
 
         StopTimerStarten()
         CheckOpstartArgumenten()
@@ -369,16 +389,31 @@ next_rec:
             Exit Sub
         End If
 
-        l.LOGTHIS("medewerker " & Me.txtLetterCode.Text & " bestaat in UMRA", 2)
+
+
+        l.LOGTHIS("medewerker " & Me.txtLetterCode.Text & " bestaat in de Middleware", 2)
         'controleren of medewerker in OO bestaat
-        Dim m As New cMedewerker
-        m.Username = Me.txtLetterCode.Text
-        m = m.GetMedewerkerClassUitOo()
+        Dim m As cMedewerker = i.GetMedewerkerClassUitOo(Me.txtLetterCode.Text)
+
+
         If m.BekendInOO Then
             Debug.Print(m.Achternaam)
         Else
             'bestaat nog niet
+            Dim m2OO As New cMedewerker         'medewerker naar onderwijs online object 
+            rd.Read()
+            With m2OO
+                m2OO.Id = dbMiddleWare.sqlSafeGetDecimal(rd, "ID")
+                m2OO.Username = dbMiddleWare.sqlSafeGetString(rd, "Personeelscode")
+                m2OO.Code = m2OO.Username
+                m2OO.Roepnaam = dbMiddleWare.sqlSafeGetString(rd, "Personeelscode")
+                m2OO.Tussenvoegsels = dbMiddleWare.sqlSafeGetString(rd, "Personeelscode")
+                m2OO.Achternaam = dbMiddleWare.sqlSafeGetString(rd, "Personeelscode")
+            End With
+
+            Dim mwId As Long = i.CreateMedewerker(m2OO)
 
         End If
+
     End Sub
 End Class

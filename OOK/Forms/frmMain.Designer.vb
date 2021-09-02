@@ -1,9 +1,9 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class frmMain
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
-    <System.Diagnostics.DebuggerNonUserCode()> _
+    <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -20,7 +20,7 @@ Partial Class frmMain
     'NOTE: The following procedure is required by the Windows Form Designer
     'It can be modified using the Windows Form Designer.  
     'Do not modify it using the code editor.
-    <System.Diagnostics.DebuggerStepThrough()> _
+    <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Me.TabControl1 = New System.Windows.Forms.TabControl()
@@ -37,6 +37,15 @@ Partial Class frmMain
         Me.btnOpvragenStudenten = New System.Windows.Forms.Button()
         Me.btnGetToken = New System.Windows.Forms.Button()
         Me.TabPage2 = New System.Windows.Forms.TabPage()
+        Me.txtSQL = New System.Windows.Forms.TextBox()
+        Me.lblStudentMutatieDatum = New System.Windows.Forms.Label()
+        Me.pbStudentMutaties = New System.Windows.Forms.ProgressBar()
+        Me.lblOpleidingLaatsteMutatie = New System.Windows.Forms.Label()
+        Me.lblGroepsDatumLaatste = New System.Windows.Forms.Label()
+        Me.lblStudentDatumLaatste = New System.Windows.Forms.Label()
+        Me.Label15 = New System.Windows.Forms.Label()
+        Me.Label14 = New System.Windows.Forms.Label()
+        Me.Label13 = New System.Windows.Forms.Label()
         Me.chkStudentenVandaagGechecktOverslaan = New System.Windows.Forms.CheckBox()
         Me.Label8 = New System.Windows.Forms.Label()
         Me.btnSyncOsiris2OO = New System.Windows.Forms.Button()
@@ -70,6 +79,8 @@ Partial Class frmMain
         Me.timTimerCheck = New System.Windows.Forms.Timer(Me.components)
         Me.chkAutomatischChecken = New System.Windows.Forms.CheckBox()
         Me.timStoppen = New System.Windows.Forms.Timer(Me.components)
+        Me.pbOpleidingsMutaties = New System.Windows.Forms.ProgressBar()
+        Me.pbGroepsMutaties = New System.Windows.Forms.ProgressBar()
         Me.TabControl1.SuspendLayout()
         Me.TabPage1.SuspendLayout()
         Me.TabPage2.SuspendLayout()
@@ -215,6 +226,17 @@ Partial Class frmMain
         '
         'TabPage2
         '
+        Me.TabPage2.Controls.Add(Me.pbGroepsMutaties)
+        Me.TabPage2.Controls.Add(Me.pbOpleidingsMutaties)
+        Me.TabPage2.Controls.Add(Me.txtSQL)
+        Me.TabPage2.Controls.Add(Me.lblStudentMutatieDatum)
+        Me.TabPage2.Controls.Add(Me.pbStudentMutaties)
+        Me.TabPage2.Controls.Add(Me.lblOpleidingLaatsteMutatie)
+        Me.TabPage2.Controls.Add(Me.lblGroepsDatumLaatste)
+        Me.TabPage2.Controls.Add(Me.lblStudentDatumLaatste)
+        Me.TabPage2.Controls.Add(Me.Label15)
+        Me.TabPage2.Controls.Add(Me.Label14)
+        Me.TabPage2.Controls.Add(Me.Label13)
         Me.TabPage2.Controls.Add(Me.chkStudentenVandaagGechecktOverslaan)
         Me.TabPage2.Controls.Add(Me.Label8)
         Me.TabPage2.Controls.Add(Me.btnSyncOsiris2OO)
@@ -226,10 +248,89 @@ Partial Class frmMain
         Me.TabPage2.Text = "Sync instellingen"
         Me.TabPage2.UseVisualStyleBackColor = True
         '
+        'txtSQL
+        '
+        Me.txtSQL.Location = New System.Drawing.Point(20, 105)
+        Me.txtSQL.Multiline = True
+        Me.txtSQL.Name = "txtSQL"
+        Me.txtSQL.Size = New System.Drawing.Size(340, 173)
+        Me.txtSQL.TabIndex = 15
+        '
+        'lblStudentMutatieDatum
+        '
+        Me.lblStudentMutatieDatum.AutoSize = True
+        Me.lblStudentMutatieDatum.Location = New System.Drawing.Point(87, 85)
+        Me.lblStudentMutatieDatum.Name = "lblStudentMutatieDatum"
+        Me.lblStudentMutatieDatum.Size = New System.Drawing.Size(65, 15)
+        Me.lblStudentMutatieDatum.TabIndex = 14
+        Me.lblStudentMutatieDatum.Text = "01/09/2021"
+        '
+        'pbStudentMutaties
+        '
+        Me.pbStudentMutaties.Location = New System.Drawing.Point(191, 84)
+        Me.pbStudentMutaties.Name = "pbStudentMutaties"
+        Me.pbStudentMutaties.Size = New System.Drawing.Size(117, 18)
+        Me.pbStudentMutaties.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.pbStudentMutaties.TabIndex = 13
+        '
+        'lblOpleidingLaatsteMutatie
+        '
+        Me.lblOpleidingLaatsteMutatie.AutoSize = True
+        Me.lblOpleidingLaatsteMutatie.Location = New System.Drawing.Point(87, 68)
+        Me.lblOpleidingLaatsteMutatie.Name = "lblOpleidingLaatsteMutatie"
+        Me.lblOpleidingLaatsteMutatie.Size = New System.Drawing.Size(13, 15)
+        Me.lblOpleidingLaatsteMutatie.TabIndex = 12
+        Me.lblOpleidingLaatsteMutatie.Text = "0"
+        '
+        'lblGroepsDatumLaatste
+        '
+        Me.lblGroepsDatumLaatste.AutoSize = True
+        Me.lblGroepsDatumLaatste.Location = New System.Drawing.Point(87, 51)
+        Me.lblGroepsDatumLaatste.Name = "lblGroepsDatumLaatste"
+        Me.lblGroepsDatumLaatste.Size = New System.Drawing.Size(13, 15)
+        Me.lblGroepsDatumLaatste.TabIndex = 11
+        Me.lblGroepsDatumLaatste.Text = "0"
+        '
+        'lblStudentDatumLaatste
+        '
+        Me.lblStudentDatumLaatste.AutoSize = True
+        Me.lblStudentDatumLaatste.Location = New System.Drawing.Point(338, 85)
+        Me.lblStudentDatumLaatste.Name = "lblStudentDatumLaatste"
+        Me.lblStudentDatumLaatste.Size = New System.Drawing.Size(13, 15)
+        Me.lblStudentDatumLaatste.TabIndex = 10
+        Me.lblStudentDatumLaatste.Text = "0"
+        '
+        'Label15
+        '
+        Me.Label15.AutoSize = True
+        Me.Label15.Location = New System.Drawing.Point(9, 66)
+        Me.Label15.Name = "Label15"
+        Me.Label15.Size = New System.Drawing.Size(72, 15)
+        Me.Label15.TabIndex = 9
+        Me.Label15.Text = "Opleidingen"
+        '
+        'Label14
+        '
+        Me.Label14.AutoSize = True
+        Me.Label14.Location = New System.Drawing.Point(9, 49)
+        Me.Label14.Name = "Label14"
+        Me.Label14.Size = New System.Drawing.Size(52, 15)
+        Me.Label14.TabIndex = 8
+        Me.Label14.Text = "Groepen"
+        '
+        'Label13
+        '
+        Me.Label13.AutoSize = True
+        Me.Label13.Location = New System.Drawing.Point(10, 85)
+        Me.Label13.Name = "Label13"
+        Me.Label13.Size = New System.Drawing.Size(61, 15)
+        Me.Label13.TabIndex = 7
+        Me.Label13.Text = "Studenten"
+        '
         'chkStudentenVandaagGechecktOverslaan
         '
         Me.chkStudentenVandaagGechecktOverslaan.AutoSize = True
-        Me.chkStudentenVandaagGechecktOverslaan.Location = New System.Drawing.Point(16, 54)
+        Me.chkStudentenVandaagGechecktOverslaan.Location = New System.Drawing.Point(10, 27)
         Me.chkStudentenVandaagGechecktOverslaan.Name = "chkStudentenVandaagGechecktOverslaan"
         Me.chkStudentenVandaagGechecktOverslaan.Size = New System.Drawing.Size(289, 19)
         Me.chkStudentenVandaagGechecktOverslaan.TabIndex = 6
@@ -240,7 +341,7 @@ Partial Class frmMain
         '
         Me.Label8.AutoSize = True
         Me.Label8.ForeColor = System.Drawing.Color.Red
-        Me.Label8.Location = New System.Drawing.Point(65, 27)
+        Me.Label8.Location = New System.Drawing.Point(58, 9)
         Me.Label8.Name = "Label8"
         Me.Label8.Size = New System.Drawing.Size(199, 15)
         Me.Label8.TabIndex = 5
@@ -248,7 +349,7 @@ Partial Class frmMain
         '
         'btnSyncOsiris2OO
         '
-        Me.btnSyncOsiris2OO.Location = New System.Drawing.Point(17, 25)
+        Me.btnSyncOsiris2OO.Location = New System.Drawing.Point(10, 7)
         Me.btnSyncOsiris2OO.Name = "btnSyncOsiris2OO"
         Me.btnSyncOsiris2OO.Size = New System.Drawing.Size(42, 19)
         Me.btnSyncOsiris2OO.TabIndex = 0
@@ -499,6 +600,22 @@ Partial Class frmMain
         'timStoppen
         '
         '
+        'pbOpleidingsMutaties
+        '
+        Me.pbOpleidingsMutaties.Location = New System.Drawing.Point(191, 65)
+        Me.pbOpleidingsMutaties.Name = "pbOpleidingsMutaties"
+        Me.pbOpleidingsMutaties.Size = New System.Drawing.Size(117, 18)
+        Me.pbOpleidingsMutaties.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.pbOpleidingsMutaties.TabIndex = 16
+        '
+        'pbGroepsMutaties
+        '
+        Me.pbGroepsMutaties.Location = New System.Drawing.Point(191, 46)
+        Me.pbGroepsMutaties.Name = "pbGroepsMutaties"
+        Me.pbGroepsMutaties.Size = New System.Drawing.Size(117, 18)
+        Me.pbGroepsMutaties.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.pbGroepsMutaties.TabIndex = 17
+        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
@@ -580,4 +697,15 @@ Partial Class frmMain
     Friend WithEvents txtLetterCode As TextBox
     Friend WithEvents btnMedewerker2OO As Button
     Friend WithEvents Label12 As Label
+    Friend WithEvents pbStudentMutaties As ProgressBar
+    Friend WithEvents lblOpleidingLaatsteMutatie As Label
+    Friend WithEvents lblGroepsDatumLaatste As Label
+    Friend WithEvents lblStudentDatumLaatste As Label
+    Friend WithEvents Label15 As Label
+    Friend WithEvents Label14 As Label
+    Friend WithEvents Label13 As Label
+    Friend WithEvents lblStudentMutatieDatum As Label
+    Friend WithEvents txtSQL As TextBox
+    Friend WithEvents pbGroepsMutaties As ProgressBar
+    Friend WithEvents pbOpleidingsMutaties As ProgressBar
 End Class

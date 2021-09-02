@@ -43,6 +43,7 @@ Public Class cPersoon
     Private _PrimaireLocatieNaam As String = ""
     Private _Teams As New Dictionary(Of String, String)
 
+
     Public Property Uuid As String
         Get
             Return _uuid
@@ -414,6 +415,7 @@ Public Class cPersoon
     '        _id = value
     '    End Set
     'End Property
+
     Public Property Voornamen As String
         Get
             Return _voornamen
