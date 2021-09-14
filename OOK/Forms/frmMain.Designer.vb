@@ -37,6 +37,8 @@ Partial Class frmMain
         Me.btnOpvragenStudenten = New System.Windows.Forms.Button()
         Me.btnGetToken = New System.Windows.Forms.Button()
         Me.TabPage2 = New System.Windows.Forms.TabPage()
+        Me.pbGroepsMutaties = New System.Windows.Forms.ProgressBar()
+        Me.pbOpleidingsMutaties = New System.Windows.Forms.ProgressBar()
         Me.txtSQL = New System.Windows.Forms.TextBox()
         Me.lblStudentMutatieDatum = New System.Windows.Forms.Label()
         Me.pbStudentMutaties = New System.Windows.Forms.ProgressBar()
@@ -56,6 +58,8 @@ Partial Class frmMain
         Me.Label5 = New System.Windows.Forms.Label()
         Me.btnStuurStudentNaarOO = New System.Windows.Forms.Button()
         Me.TabPage4 = New System.Windows.Forms.TabPage()
+        Me.Label16 = New System.Windows.Forms.Label()
+        Me.btnVerwerkNieuweMedewerkers = New System.Windows.Forms.Button()
         Me.Label12 = New System.Windows.Forms.Label()
         Me.txtLetterCode = New System.Windows.Forms.TextBox()
         Me.btnMedewerker2OO = New System.Windows.Forms.Button()
@@ -79,8 +83,6 @@ Partial Class frmMain
         Me.timTimerCheck = New System.Windows.Forms.Timer(Me.components)
         Me.chkAutomatischChecken = New System.Windows.Forms.CheckBox()
         Me.timStoppen = New System.Windows.Forms.Timer(Me.components)
-        Me.pbOpleidingsMutaties = New System.Windows.Forms.ProgressBar()
-        Me.pbGroepsMutaties = New System.Windows.Forms.ProgressBar()
         Me.TabControl1.SuspendLayout()
         Me.TabPage1.SuspendLayout()
         Me.TabPage2.SuspendLayout()
@@ -247,6 +249,22 @@ Partial Class frmMain
         Me.TabPage2.TabIndex = 1
         Me.TabPage2.Text = "Sync instellingen"
         Me.TabPage2.UseVisualStyleBackColor = True
+        '
+        'pbGroepsMutaties
+        '
+        Me.pbGroepsMutaties.Location = New System.Drawing.Point(191, 46)
+        Me.pbGroepsMutaties.Name = "pbGroepsMutaties"
+        Me.pbGroepsMutaties.Size = New System.Drawing.Size(117, 18)
+        Me.pbGroepsMutaties.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.pbGroepsMutaties.TabIndex = 17
+        '
+        'pbOpleidingsMutaties
+        '
+        Me.pbOpleidingsMutaties.Location = New System.Drawing.Point(191, 65)
+        Me.pbOpleidingsMutaties.Name = "pbOpleidingsMutaties"
+        Me.pbOpleidingsMutaties.Size = New System.Drawing.Size(117, 18)
+        Me.pbOpleidingsMutaties.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.pbOpleidingsMutaties.TabIndex = 16
         '
         'txtSQL
         '
@@ -415,6 +433,8 @@ Partial Class frmMain
         '
         'TabPage4
         '
+        Me.TabPage4.Controls.Add(Me.Label16)
+        Me.TabPage4.Controls.Add(Me.btnVerwerkNieuweMedewerkers)
         Me.TabPage4.Controls.Add(Me.Label12)
         Me.TabPage4.Controls.Add(Me.txtLetterCode)
         Me.TabPage4.Controls.Add(Me.btnMedewerker2OO)
@@ -425,6 +445,23 @@ Partial Class frmMain
         Me.TabPage4.TabIndex = 3
         Me.TabPage4.Text = "Medewerkers"
         Me.TabPage4.UseVisualStyleBackColor = True
+        '
+        'Label16
+        '
+        Me.Label16.AutoSize = True
+        Me.Label16.Location = New System.Drawing.Point(100, 141)
+        Me.Label16.Name = "Label16"
+        Me.Label16.Size = New System.Drawing.Size(203, 15)
+        Me.Label16.TabIndex = 4
+        Me.Label16.Text = "Nieuwe medewerkers naar OO sturen"
+        '
+        'btnVerwerkNieuweMedewerkers
+        '
+        Me.btnVerwerkNieuweMedewerkers.Location = New System.Drawing.Point(37, 132)
+        Me.btnVerwerkNieuweMedewerkers.Name = "btnVerwerkNieuweMedewerkers"
+        Me.btnVerwerkNieuweMedewerkers.Size = New System.Drawing.Size(56, 24)
+        Me.btnVerwerkNieuweMedewerkers.TabIndex = 3
+        Me.btnVerwerkNieuweMedewerkers.UseVisualStyleBackColor = True
         '
         'Label12
         '
@@ -600,22 +637,6 @@ Partial Class frmMain
         'timStoppen
         '
         '
-        'pbOpleidingsMutaties
-        '
-        Me.pbOpleidingsMutaties.Location = New System.Drawing.Point(191, 65)
-        Me.pbOpleidingsMutaties.Name = "pbOpleidingsMutaties"
-        Me.pbOpleidingsMutaties.Size = New System.Drawing.Size(117, 18)
-        Me.pbOpleidingsMutaties.Style = System.Windows.Forms.ProgressBarStyle.Continuous
-        Me.pbOpleidingsMutaties.TabIndex = 16
-        '
-        'pbGroepsMutaties
-        '
-        Me.pbGroepsMutaties.Location = New System.Drawing.Point(191, 46)
-        Me.pbGroepsMutaties.Name = "pbGroepsMutaties"
-        Me.pbGroepsMutaties.Size = New System.Drawing.Size(117, 18)
-        Me.pbGroepsMutaties.Style = System.Windows.Forms.ProgressBarStyle.Continuous
-        Me.pbGroepsMutaties.TabIndex = 17
-        '
         'frmMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
@@ -708,4 +729,6 @@ Partial Class frmMain
     Friend WithEvents txtSQL As TextBox
     Friend WithEvents pbGroepsMutaties As ProgressBar
     Friend WithEvents pbOpleidingsMutaties As ProgressBar
+    Friend WithEvents Label16 As Label
+    Friend WithEvents btnVerwerkNieuweMedewerkers As Button
 End Class

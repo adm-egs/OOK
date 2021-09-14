@@ -36,7 +36,12 @@ Public Class cInstellingen
     Private _SqlCountStudentMutaties As String = ""
     Private _sqlCountGroepsMutaties As String = ""
     Private _sqlCountOpleidinsgMutaties As String = ""
-
+    Private _qMutatieQueue As New Queue(Of cQueueItem)
+    Private _dMutatieQueueStudenten As Dictionary(Of String, cQueueItem)
+    Private _qMutatieQueueGroepen As New Queue(Of cQueueItem)
+    Private _dMutatieQueueGroepen As Dictionary(Of String, cQueueItem)
+    Private _qMutatieQueueOpleidingen As New Queue(Of cQueueItem)
+    Private _dMutatieQueueOpleidingen As Dictionary(Of String, cQueueItem)
 
     Public Property GrantType As String
         Get
@@ -347,6 +352,60 @@ Public Class cInstellingen
             Return sHelp
 
         End Get
+    End Property
+
+    Public Property qMutatiesStudenten As Queue(Of cQueueItem)
+        Get
+            Return _qMutatieQueue
+        End Get
+        Set(value As Queue(Of cQueueItem))
+            _qMutatieQueue = value
+        End Set
+    End Property
+
+    Public Property dMutatieQueueStudenten As Dictionary(Of String, cQueueItem)
+        Get
+            Return _dMutatieQueueStudenten
+        End Get
+        Set(value As Dictionary(Of String, cQueueItem))
+            _dMutatieQueueStudenten = value
+        End Set
+    End Property
+
+    Public Property QMutatieQueueGroepen As Queue(Of cQueueItem)
+        Get
+            Return _qMutatieQueueGroepen
+        End Get
+        Set(value As Queue(Of cQueueItem))
+            _qMutatieQueueGroepen = value
+        End Set
+    End Property
+
+    Public Property DMutatieQueueGroepen As Dictionary(Of String, cQueueItem)
+        Get
+            Return _dMutatieQueueGroepen
+        End Get
+        Set(value As Dictionary(Of String, cQueueItem))
+            _dMutatieQueueGroepen = value
+        End Set
+    End Property
+
+    Public Property QMutatieQueueOpleidingen As Queue(Of cQueueItem)
+        Get
+            Return _qMutatieQueueOpleidingen
+        End Get
+        Set(value As Queue(Of cQueueItem))
+            _qMutatieQueueOpleidingen = value
+        End Set
+    End Property
+
+    Public Property DMutatieQueueOpleidingen As Dictionary(Of String, cQueueItem)
+        Get
+            Return _dMutatieQueueOpleidingen
+        End Get
+        Set(value As Dictionary(Of String, cQueueItem))
+            _dMutatieQueueOpleidingen = value
+        End Set
     End Property
 
     Public Sub New()
@@ -924,6 +983,182 @@ Public Class cInstellingen
 
     End Function
 
+    'Public Function CheckOpenstaandeMutatiesSmarter()
+    '    'functie controleert diverse tabellen op relevante mutatis
+    '    'ost_student - STUDENT - NAW    //select distinct mutatiedatum from ost_student;
+    '    'OST_groep //ost_sgroep_student
+    '    'ost_student_ook
+    '    'opvragen lijst met studentnummer en mutatie moment
+    '    'dictionary maken met studenten te verwerken
+    '    'als de student al in de dictionary staat moet deze nog verwerkt worden 
+
+    '    'Dim sStudentNummer As String = ""
+    '    ' Dim mutatieDatum As Date
+
+    '    'doe check
+    '    Application.UseWaitCursor = True
+
+    '    Try
+    '        ' Dim OudsteMutatieDatumStudent As Date = New Date(2000, 8, 1)
+    '        'studentmutaties verwerken
+    '        frmMain.tsCurrentState.Text = "Studentent"
+    '        Dim sql As String = SqlStudentMutaties(Last_check_Date("last_check_student"))
+    '        Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(sql)
+    '        QueueItems(rd, "last_check_student")
+    '        ' VerwerkItems(rd, "last_check_student", frmMain.pbStudentMutaties)
+    '    Catch ex As Exception
+    '        l.LOGTHIS("fout bij verwerken studenten mutaties naar wacht que " & ex.Message)
+    '    End Try
+
+    '    Try
+    '        'groepsmutaties verwerken
+    '        frmMain.tsCurrentState.Text = "Groepen"
+    '        Dim sql As String = SqlGroepMutaties(Last_check_Date("last_check_groep"))
+    '        Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(sql)
+    '        QueueItems(rd, "last_check_groep")
+    '    Catch ex As Exception
+    '        l.LOGTHIS("fout bij verwerken groeps mutaties: " & ex.Message)
+    '    End Try
+
+    '    Try
+    '        'opleidingsmutaties verwerken
+    '        frmMain.tsCurrentState.Text = "Opleiding"
+    '        Dim rd As OracleDataReader = dbOsiris.oracleQueryUitvoeren(SqlOpleidingMutaties(Last_check_Date("last_check_opleiding")))
+    '        QueueItems(rd, "last_check_opleiding") ', frmMain.pbOpleidingsMutaties)
+    '    Catch ex As Exception
+    '        l.LOGTHIS("fout bij verwerken opleidings mutaties: " & ex.Message)
+    '    End Try
+
+    '    'verwerken mutaties die in de queue staan
+    '    'opvragen mutaties 
+    '    BijwerkenQueue()
+
+    '    frmMain.tsCurrentState.Text = "Geplande mutaties checken"
+    '    GeplandeMutatiesControleren()
+
+
+
+
+
+    '    ' LastMutatieDatumCheckedOpleiding = CheckDate(EersteMutatieDatumOpleiding)
+
+    '    'tijd wegschrijven
+
+    '    ' ini.WriteString("Check", "last_check_opleiding", Now.ToString("yyyy-MM-dd HH:mm:ss"))
+
+    '    frmMain.tsCurrentState.Text = "Ready for action"
+    '    frmMain.tsLastCheckTime.Text = Now()
+    '    Return True
+    '    Application.UseWaitCursor = False
+
+    'End Function
+    'Public Function QueueItems(rd As OracleDataReader, item As String) As Boolean
+    '    If IsNothing(rd) Then
+    '        Return True 'geen work items
+    '    End If
+    '    Dim mutatiedatum As Date
+    '    Dim OudsteMutatieDatum As New Date(2000, 1, 1)
+
+    '    While rd.Read
+    '        Dim sOVnr As String = dbOsiris.oraSafeGetDecimal(rd, "studentnummer")     's.studentnummer, s.mutatie_datum 
+    '        Dim mutDatum As Date = dbOsiris.oraGetSafeDate(rd, "mutatiedatum")
+    '        Select Case item
+    '            Case "last_check_student"
+    '                'item naar queue studentmutaties sturen als deze er nog niet in staat
+    '                If Not dMutatieQueueStudenten.ContainsKey(sOVnr) Then
+    '                    'item is nog toegevoegd
+    '                    Dim qItem As New cQueueItem("student", sOVnr, mutDatum)
+    '                    dMutatieQueueStudenten.Add(sOVnr, qItem)
+    '                    qMutatiesStudenten.Enqueue(qItem)
+    '                    'eventueel uit de queue groepen halen
+    '                    If DMutatieQueueGroepen.ContainsKey(sOVnr) Then
+    '                        DMutatieQueueGroepen.Remove(sOVnr)
+    '                    End If
+
+    '                End If
+
+    '            Case "last_check_groep"
+    '            Case "last_check_opleiding"
+    '        End Select
+
+    '        If mutatiedatum > OudsteMutatieDatum Then
+    '            OudsteMutatieDatum = mutatiedatum   'opslaan wat de eerste mutatiedatum is voor toekomstige mutaties
+    '        End If
+
+    '    End While
+
+    '    LastMutatieDatumCheckedStudent = CheckDate(OudsteMutatieDatum)
+    '    Save_check_date(, LastMutatieDatumCheckedStudent)
+
+    '    Return True
+    'End Function
+
+    'Public Function BijwerkenQueue() As Boolean
+    '    'iedere iteratie de queue leegmaken
+    '    If qMutatiesStudenten.Count = 0 Then
+    '        Return True     'niets te doen
+    '    End If
+    '    'save que 2 disk
+
+    '    frmMain.pbMutaties.Maximum = qMutatiesStudenten.Count
+    '    frmMain.pbMutaties.Visible = True
+
+    '    While qMutatiesStudenten.Count > 0
+    '        Dim sOVnr As String = qMutatiesStudenten.Dequeue
+    '        GetStudentsOsiris(sOVnr)
+    '        If dictOsirisStudentenKeyStudentNr.ContainsKey(sOVnr) Then
+    '            dictOsirisStudentenKeyStudentNr(sOVnr).ChangeUserInOO()
+    '        End If
+    '        frmMain.pbMutaties.Value = qMutatiesStudenten.Count
+    '    End While
+
+    '    frmMain.pbMutaties.Visible = False
+    '    Return True
+
+    'End Function
+
+    'Public Function GetQueue()
+
+    'End Function
+    'Private Function SaveQue()
+    '    Dim qCopy As Queue(Of String) = QMutatieQueue
+    '    Dim sResult As String = ""
+    '    Dim intTeller As Integer = 0
+
+    '    While qCopy.Count > 0
+    '        sResult = sResult & qCopy.Dequeue & "|"
+    '        intTeller += 1
+    '        If intTeller >= 10 Then
+    '            'write result to file
+    '            Write2Que(sResult)
+    '        End If
+    '    End While
+    'End Function
+
+    'Private Function Write2Que(sLogItem As String) As Boolean
+    '    Dim cmd As New OleDb.OleDbCommand
+    '    cmd.CommandType = CommandType.StoredProcedure
+    '    cmd.CommandText = "[db_oo].[update_work_queue]"
+
+    '    With cmd.Parameters
+    '        'datum tijd gaat automatisch via de stored procedure in de database
+    '        .AddWithValue("@logitem", sLogItem)
+
+    '    End With
+
+    '    If dbMiddleWare.sqlCheckConnectionState = True Then
+    '        Try
+    '            cmd.Connection = dbMiddleWare.conSQL
+    '            cmd.ExecuteNonQuery()
+
+    '        Catch ex As Exception
+    '            Return False
+    '        End Try
+    '    Else
+    '        Return False
+    '    End If
+    '    Return True
+    'End Function
     Private Function Save_check_date(sitem As String, waarde As Date) As Boolean
         Dim cmd As New OleDb.OleDbCommand
         cmd.CommandType = CommandType.StoredProcedure
@@ -1272,15 +1507,15 @@ Public Class cInstellingen
             If response.StatusCode <> Net.HttpStatusCode.OK Then
                 l.LOGTHIS("Request failed : " & response.StatusCode)
                 ' l.LOGTHIS("OOid=" & Me.OOid)
-                Return False
+                Return -1
             End If
 
             Dim json As JObject = JObject.Parse(response.Content)
             ' Dim dataUser As JArray = json.SelectToken("error")
             'controleren of dit gelukt is
         Catch ex As Exception
-            l.LOGTHIS("Fout bij create medewerker user: " & ex.Message)
-            Return False
+            l.LOGTHIS("Fout bij aanmaken medewerker : " & ex.Message)
+            Return -1
         End Try
         Return True
     End Function

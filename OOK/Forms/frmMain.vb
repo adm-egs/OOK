@@ -79,10 +79,7 @@ Public Class frmMain
         End If
 
 
-        pbStudentMutatiesVertikaal.Left = Me.txtLog.Left + Me.txtLog.Width + 10
-        pbStudentMutatiesVertikaal.Top = 200
-        pbStudentMutatiesVertikaal.Width = 30
-        pbStudentMutatiesVertikaal.Visible = True
+
 
 
         StopTimerStarten()
@@ -105,6 +102,11 @@ Public Class frmMain
             Me.chkAutomatischChecken.Checked = True
             'start_timer()
             Exit Sub
+        End If
+
+        If strArgument = "verwerken_nieuwe_medewerkers" Then
+            NieuweMedewerkers()
+            End
         End If
 
     End Sub
@@ -276,6 +278,7 @@ next_rec:
     End Sub
 
     Sub start_timer()
+
         l.LOGTHIS("Automatisch verwerken gestart")
         Me.timTimerCheck.Interval = 5000   '5 seconden na starten wordt de 1e check gedaan
         Me.timTimerCheck.Enabled = True
@@ -377,43 +380,137 @@ next_rec:
     End Sub
 
     Private Sub btnMedewerker2OO_Click(sender As Object, e As EventArgs) Handles btnMedewerker2OO.Click
-        Dim sQuery As String = "Select * from  [Koppel].[db_umra_2021].[medewerkers] where personeelscode like '" & Me.txtLetterCode.Text & "'"
+
+        MedewerkerNaarOO(Me.txtLetterCode.Text)
+
+
+
+    End Sub
+
+    Function MedewerkerNaarOO(sLettercode As String) As Boolean
+        Dim sQuery As String = "Select * from  [Koppel].[db_umra_2021].[medewerkers] where personeelscode like '" & sLettercode & "'"
         Dim rd As OleDbDataReader = dbMiddleWare.sqlQueryUitvoeren(sQuery)
         If IsNothing(rd) Then
-            MsgBox("niet gevonden")
-            Exit Sub
+            l.LOGTHIS("niet gevonden : " & sLettercode)
+            Return False
         End If
 
         If rd.HasRows = False Then
-            MsgBox("niet gevonden")
-            Exit Sub
+            l.LOGTHIS("niet gevonden : " & sLettercode)
+            Return False
         End If
 
 
+        l.LOGTHIS("medewerker " & sLettercode & " bestaat in de Middleware", 2)
 
-        l.LOGTHIS("medewerker " & Me.txtLetterCode.Text & " bestaat in de Middleware", 2)
         'controleren of medewerker in OO bestaat
-        Dim m As cMedewerker = i.GetMedewerkerClassUitOo(Me.txtLetterCode.Text)
+        Dim m As cMedewerker = i.GetMedewerkerClassUitOo(sLettercode)
 
+        If IsDBNull(m) Then
+            Return False
+        End If
 
         If m.BekendInOO Then
-            Debug.Print(m.Achternaam)
+            Dim sql As String = "Update [Koppel].[db_umra_2021].[medewerkers] set oo_status='Last check: ' + convert(varchar, getdate(), 9) where personeelscode like '" & sLettercode & "'"
+            Dim cmd As OleDbCommand
+
+
+            Try
+                cmd = New OleDbCommand(sql, dbMiddleWare.conSQL)
+                cmd.ExecuteScalar()
+            Catch ex As Exception
+                If l.UitgebreideLogging Then
+                    l.LOGTHIS("Fout bij query uitvoeren : " & ex.Message, 25)
+                    l.LOGTHIS(sql, 25)
+                End If
+
+            End Try
         Else
-            'bestaat nog niet
-            Dim m2OO As New cMedewerker         'medewerker naar onderwijs online object 
-            rd.Read()
-            With m2OO
-                m2OO.Id = dbMiddleWare.sqlSafeGetDecimal(rd, "ID")
-                m2OO.Username = dbMiddleWare.sqlSafeGetString(rd, "Personeelscode")
-                m2OO.Code = m2OO.Username
-                m2OO.Roepnaam = dbMiddleWare.sqlSafeGetString(rd, "Personeelscode")
-                m2OO.Tussenvoegsels = dbMiddleWare.sqlSafeGetString(rd, "Personeelscode")
-                m2OO.Achternaam = dbMiddleWare.sqlSafeGetString(rd, "Personeelscode")
-            End With
+                'bestaat nog niet
+                l.LOGTHIS("Medewerker aanmaken in OO")
+                Dim m2OO As New cMedewerker         'medewerker naar onderwijs online object 
+                rd.Read()
+                With m2OO
+                    m2OO.Id = dbMiddleWare.sqlSafeGetDecimal(rd, "ID")
+                    m2OO.Username = dbMiddleWare.sqlSafeGetString(rd, "Personeelscode")
+                    m2OO.Code = m2OO.Username
+                    m2OO.Roepnaam = dbMiddleWare.sqlSafeGetString(rd, "roepnaam")
+                m2OO.Tussenvoegsels = dbMiddleWare.sqlSafeGetString(rd, "Tussenvoegsels")
+                m2OO.Achternaam = dbMiddleWare.sqlSafeGetString(rd, "Achternaam")
+                End With
 
-            Dim mwId As Long = i.CreateMedewerker(m2OO)
+                Dim mwId As Long = i.CreateMedewerker(m2OO)
+                Dim sql As String = "Update [Koppel].[db_umra_2021].[medewerkers] set  oo_status=getdate() where personeelscode like '" & sLettercode & "'"
 
-        End If
+                Dim cmd As OleDbCommand
+
+
+                Try
+                    cmd = New OleDbCommand(sql, dbMiddleWare.conSQL)
+                    cmd.ExecuteScalar()
+                Catch ex As Exception
+                    If l.UitgebreideLogging Then
+                        l.LOGTHIS("Fout bij query uitvoeren : " & ex.Message, 25)
+                        l.LOGTHIS(sql, 25)
+                    End If
+
+                End Try
+
+                For x = 1 To 5000
+                    Application.DoEvents()
+                    Application.DoEvents()
+                    Application.DoEvents()
+                Next
+            End If
+            Application.DoEvents()
+            Application.DoEvents()
+            Application.DoEvents()
+
+            Dim mRetour As cMedewerker = i.GetMedewerkerClassUitOo(sLettercode)
+            If mRetour.Id <> -1 And mRetour.BekendInOO = True Then
+                l.LOGTHIS("Aanpassen rechtengroepen")
+                'toevoegen permissie groep
+                'docent is permissie groep 2 zowel in prd als test
+                'medewerkers is permissiegroep 14 zowel in prod als test
+                'voorbeeld call:
+                'https://mboutrechttest.onderwijsonline.nl/api/v1/user/:id/groups/attach?group_ids[]=3&group_ids[]=6&group_ids[]=8 
+                Dim sCall As String = dURLS("BasisUrl") & "/api/v1/user/" & mRetour.Id & "/groups/attach?group_ids[]=2&group_ids[]=14"
+                Dim sResult As String = i.OO_JSON_REQUEST(sCall, "Toevoegen permissiegroepen bij medewerker", sLettercode, RestSharp.Method.POST)
+            Else
+                Application.DoEvents()
+            End If
+            l.LOGTHIS("Done")
+
+
+
+
+
+
+        Return True
+    End Function
+
+    Private Sub btnVerwerkNieuweMedewerkers_Click(sender As Object, e As EventArgs) Handles btnVerwerkNieuweMedewerkers.Click
+
+        NieuweMedewerkers()
 
     End Sub
+    Function NieuweMedewerkers() As Boolean
+        Dim sQuery As String = "Select * from  [Koppel].[db_umra_2021].[medewerkers] where _first_found > getdate()-45 and
+                oo_status is null"
+        Dim rd As OleDbDataReader = dbMiddleWare.sqlQueryUitvoeren(sQuery)
+        If IsNothing(rd) Then
+            l.LOGTHIS("Geen nieuwe medewerkers gevonden")
+            Return False
+        End If
+
+        If rd.HasRows = False Then
+            l.LOGTHIS("Geen nieuwe medewerkers gevonden")
+            Return False
+        End If
+        While rd.Read
+            Dim sLettercode As String = dbMiddleWare.sqlSafeGetString(rd, "personeelscode")
+            MedewerkerNaarOO(sLettercode)
+        End While
+        Return True
+    End Function
 End Class
